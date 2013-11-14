@@ -1,0 +1,3 @@
+*.pyc
+*.log
+flight_data.csv

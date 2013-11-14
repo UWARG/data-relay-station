@@ -2,6 +2,26 @@ import serial
 import struct
 from xbee import XBee
 
+db_type = (
+        ('q', 'time'),
+        ('d', 'lat'),
+        ('d', 'lon'),
+        ('f', 'pitch'),
+        ('f', 'roll'),
+        ('f', 'yaw'),
+        ('f', 'pitch_rate'),
+        ('f', 'roll_rate'),
+        ('f', 'yaw_rate'),
+        ('f', 'pitch_gain'),
+        ('f', 'roll_gain'),
+        ('f', 'yaw_gain'),
+        ('f', 'pitch_setpoint'),
+        ('f', 'roll_setpoint'),
+        ('f', 'yaw_setpoint'),
+        ('B', 'editing_gain'),
+        ('x', ),            # Padding (comment out if no padding needed
+        )
+
 headers = ('time',
         'lat', 'lon',
         'pitch', 'roll', 'yaw',
@@ -24,7 +44,7 @@ def main():
         try:
             while True:
                 packet = xbee.wait_read_frame()
-                data = struct.unpack('qddfffffffffhhhcx', packet['rf_data'])
+                data = struct.unpack('qddfffffffffhhhhBx', packet['rf_data'])
                 with open('flight_data.csv', 'a+w') as outfile:
                     outfile.write(','.join([str(i) for i in data]))
                     outfile.write('\n')
