@@ -2,6 +2,9 @@ import serial
 import struct
 from xbee import XBee
 
+# The max allowed size for an api packet
+MAX_PACKET_SIZE = 100
+
 db_type = (
         ('q', 'time'),
         ('d', 'lat'),
@@ -15,22 +18,19 @@ db_type = (
         ('f', 'pitch_gain'),
         ('f', 'roll_gain'),
         ('f', 'yaw_gain'),
-        ('f', 'pitch_setpoint'),
-        ('f', 'roll_setpoint'),
-        ('f', 'yaw_setpoint'),
+        ('h', 'pitch_setpoint'),
+        ('h', 'roll_setpoint'),
+        ('h', 'yaw_setpoint'),
+        ('h', 'throttle_setpoint'),
         ('B', 'editing_gain'),
-        ('x', ),            # Padding (comment out if no padding needed
+        ('x', 'one byte of padding'),
         )
 
-headers = ('time',
-        'lat', 'lon',
-        'pitch', 'roll', 'yaw',
-        'pitch_rate', 'roll_rate', 'yaw_rate',
-        'pitch_gain', 'roll_gain', 'yaw_gain',
-        'pitch_setpoint', 'roll_setpoint', 'yaw_setpoint',
-        'editing_gain' )
-
 def main():
+
+    data_shape = struct.Struct(''.join(map(lambda x: x[0], db_type)))
+    data_size = data_shape.size
+    expected_packets = data_size / MAX_PACKET_SIZE + 1
 
     try:
         ser = serial.Serial('/dev/ttyUSB0', 38400)
@@ -38,14 +38,20 @@ def main():
         print 'xbee created/initialized'
 
         with open('flight_data.csv', 'w') as outfile:
-            outfile.write(','.join(headers))
+            outfile.write(','.join([i[1] for i in db_type if not i[0] == 'x']))
             outfile.write('\n')
 
         try:
             while True:
-                packet = xbee.wait_read_frame()
-                data = struct.unpack('qddfffffffffhhhhBx', packet['rf_data'])
+                payload = ''
+                for x in xrange(expected_packets):
+                    packet = xbee.wait_read_frame()
+                    payload += packet['rf_data']
+                    if x < expected_packets - 1 and len(payload) < 100:
+                        break;
+
                 with open('flight_data.csv', 'a+w') as outfile:
+                    data = data_shape.unpack(payload)
                     outfile.write(','.join([str(i) for i in data]))
                     outfile.write('\n')
 
