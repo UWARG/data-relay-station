@@ -22,7 +22,7 @@ while True:
 		a=[]
 		for x in r:
 			x=map(eval,x)
-			x[-1]=ord(x[-1])
+			#x[-1]=ord(x[-1])
 			if _time_wrap:
 				while len(a) and a[-1][0]>x[0]:
 					x[0]+=_time_wrap
