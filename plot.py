@@ -34,7 +34,7 @@ while True:
 
 		clr=iter(cycle('bgrcmyk'))
 		end=max(t)
-		xwin=end-1000,end
+		xwin=end-50000,end
 		ax.cla()
 		ax2.cla()
 		ax.axis(xwin+(-15,5))
