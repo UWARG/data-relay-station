@@ -48,15 +48,19 @@ class ProducerConsumerProxy(BasicProducerConsumerProxy):
     """Proxy which buffers a few telemetry blocks and drops old ones"""
     implements(interfaces.IPushProducer)
 
-    def __init__(self):
+    def __init__(self, producer, consumer):
         self._paused = False
         self._buffer = deque(size = 10)
+        self._producer = producer
+        self._consumer = consumer
     
     def pauseProducing(self):
         self._paused = True
 
     def resumeProducing(self):
         self._paused = False
+        for data in _buffer:
+            self._consumer.write(data)
 
     def stopProducing(self):
         pass
@@ -72,6 +76,7 @@ class ServeTelemetry(LineReceiver):
 
     def lineReceiver(self, line):
         # TODO: continue handshake
+        pass
 
 
     def connectionLost(self, reason):
