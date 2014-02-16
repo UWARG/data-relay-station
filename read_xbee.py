@@ -50,6 +50,7 @@ def main():
                     if x < expected_packets - 1 and len(payload) < 100:
                         break;
 
+                # write data to file
                 with open('flight_data.csv', 'a+w') as outfile:
                     data = data_shape.unpack(payload)
                     outfile.write(','.join([str(i) for i in data]))
@@ -66,5 +67,5 @@ def main():
         print 'failed to initialize serial connection'
 
 
-if __name__ == '__main__':
+
     main()
