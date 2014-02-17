@@ -1,35 +1,39 @@
 import serial
 import struct
-from xbee import XBee
+from xbee.zigbee import ZigBee
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
 
 
-class WriteToFileMiddleware(object):
+class WriteToFileMiddleware:
     """Take a generator, write each element out to file and
     forward it
     """
     def __init__(self, gen, filename, header):
+        print('initing {}'.format(self.__class__))
         self.gen = gen
         self.filename = filename
         self.header = header
+        #self.transport = gen.transport
 
     def data_lines(self):
-        # write data line out to file
-        with open(self.filename, 'a+w') as outfile:
-            outfile.write("{1}\n".format(header))
+        # write header line out to file
+        print('writing headers')
+        with open(self.filename, 'w') as outfile:
+            outfile.write("{}\n".format(self.header))
 
-        for line in self.gen:
+        for line in self.gen.data_lines():
+            print('writing line to file')
             # write element to file
             with open(self.filename, 'a+w') as outfile:
-                data = data_shape.unpack(line)
-                outfile.write(','.join([str(i) for i in data]))
+                outfile.write(','.join([str(i) for i in line]))
                 outfile.write('\n')
             # re-yield element
             yield i
 
-class Receiver(object):
+
+class Receiver:
 
     def __init__(self, db_type):
         self.data_shape = struct.Struct(
@@ -39,14 +43,15 @@ class Receiver(object):
 
     def __enter__(self):
         self.ser = serial.Serial('/dev/ttyUSB0', 38400)
-        self.xbee = XBee(ser)
+        self.xbee = ZigBee(self.ser)
         print 'xbee created/initialized'
+        return self
 
     def data_lines(self):
         while True:
             payload = ''
             for x in xrange(self.expected_packets):
-                packet = xbee.wait_read_frame()
+                packet = self.xbee.wait_read_frame()
                 payload += packet['rf_data']
                 if x < self.expected_packets - 1 and len(payload) < 100:
                     break;

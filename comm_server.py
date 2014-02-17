@@ -1,36 +1,15 @@
-import datetime
-from twisted.protocols.pcp import BasicProducerConsumerProxy
+from collections import deque
+from twisted.protocols.basic import LineReceiver
 from twisted.internet.protocol import Protocol, Factory
-from twisted.internet import interfaces, reactor
-
-from receiver import Receiver, WriteToFileMiddleware
-
-db_type = (
-        ('q', 'time'),
-        ('d', 'lat'),
-        ('d', 'lon'),
-        ('f', 'pitch'),
-        ('f', 'roll'),
-        ('f', 'yaw'),
-        ('f', 'pitch_rate'),
-        ('f', 'roll_rate'),
-        ('f', 'yaw_rate'),
-        ('f', 'pitch_gain'),
-        ('f', 'roll_gain'),
-        ('f', 'yaw_gain'),
-        ('h', 'pitch_setpoint'),
-        ('h', 'roll_setpoint'),
-        ('h', 'yaw_setpoint'),
-        ('h', 'throttle_setpoint'),
-        ('B', 'editing_gain'),
-        ('x', 'one byte of padding'),
-        )
+from twisted.internet import interfaces
+from zope.interface import implements
 
 
 
-class ProducerToManyClientProxy(Protocol):
+class ProducerToManyClient(Protocol):
 
     def __init__(self, factory):
+        print('initing {}'.format(self.__class__))
         self.factory = factory
 
     def connectionMade(self):
@@ -41,16 +20,17 @@ class ProducerToManyClientProxy(Protocol):
             client.transport.write(data)
 
     def connectionLost(self, reason):
-        self.factory.clients.remove(self):
+        self.factory.clients.remove(self)
 
 
-class ProducerConsumerProxy(BasicProducerConsumerProxy):
+class ProducerConsumerBufferProxy:
     """Proxy which buffers a few telemetry blocks and drops old ones"""
-    implements(interfaces.IPushProducer)
+    implements(interfaces.IPushProducer, interfaces.IConsumer)
 
     def __init__(self, producer, consumer):
+        print('initing {}'.format(self.__class__))
         self._paused = False
-        self._buffer = deque(size = 10)
+        self._buffer = deque(maxlen = 10)
         self._producer = producer
         self._consumer = consumer
     
@@ -59,7 +39,7 @@ class ProducerConsumerProxy(BasicProducerConsumerProxy):
 
     def resumeProducing(self):
         self._paused = False
-        for data in _buffer:
+        for data in self._buffer:
             self._consumer.write(data)
 
     def stopProducing(self):
@@ -70,34 +50,40 @@ class ProducerConsumerProxy(BasicProducerConsumerProxy):
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
+    def __init__(self, producer):
+        print('initing {}'.format(self.__class__))
+        self._producer = producer
+        self._firstConnect = True
+
     def connectionMade(self):
+        if self._firstConnect:
+            # TODO: setup controlling client
+            self._firstConnect = False
         # TODO: handshake stuff
+        proxy = ProducerConsumerBufferProxy(self, self._producer)
+        self.transport.registerProducer(proxy, True)
+        proxy.resumeProducing()
         pass
 
-    def lineReceiver(self, line):
+    def lineReceived(self, line):
         # TODO: continue handshake
+        print('from {} received line {}'.format(
+            self.transport.getPeer(), line))
         pass
 
 
     def connectionLost(self, reason):
         print('connection lost from {}'.format(self.transport.getPeer()))
 
-def main():
+class TelemetryFactory(Factory):
 
-    filename = "flight_data {}.csv".format(datetime.datetime.now())
-    print "writing to file called '{}'".format(filename)
+    def __init__(self):
+        self.clients = []
 
-            
-    header = ','.join([i[1] for i in db_type if not i[0] == 'x'])
+    def setSource(self, telemetrySource):
+        self._telemetrySource = telemetrySource
 
-    try:
-        with Receiver(db_type) as datalines:
-            for line in WriteToFileMiddleware(datalines, filename, header):
-                pass
-    except KeyboardInterrupt:
-        print "Capture interrupted by user"
+    def buildProtocol(self, addr):
+        return ServeTelemetry(self._telemetrySource)
 
-
-
-if __name__ == "__main__":
-    main()
+#class LoggingConsumer(
