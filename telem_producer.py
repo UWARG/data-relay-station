@@ -16,7 +16,7 @@ class TelemetryProducer:
         print('resuming producing of {}'.format(self.__class__))
         for i in self._gen.data_lines():
             #print('{}'.format(i))
-            self._consumer.protocol.write(i)
+            self._consumer.write(i)
 
     def connectionMade(self):
         self.factory.clients.append(self)

@@ -15,12 +15,12 @@ class ProducerToManyClient:
 
     def addClient(self, client):
         print('client added to one2many made')
-        self.clients.append(self)
+        self.clients.append(client)
 
     def write(self, data):
-        print('one2many received data')
+        #print('one2many received data')
         for client in self.clients:
-            client.transport.write(data)
+            client.write(data)
 
     def removeClient(self, client, reason):
         self.clients.remove(client)
@@ -44,13 +44,14 @@ class ProducerConsumerBufferProxy:
     def resumeProducing(self):
         self._paused = False
         for data in self._buffer:
-            self._consumer.write(data)
+            self._consumer.transport.write(data)
 
     def stopProducing(self):
         pass
 
     def write(self, data):
         self._buffer.append(data)
+        self.resumeProducing()
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""

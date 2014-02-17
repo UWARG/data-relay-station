@@ -1,6 +1,6 @@
 import datetime, time
 
-from twisted.internet import reactor
+from twisted.internet import reactor, threads
 from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
@@ -37,9 +37,9 @@ class DatalinkSimulator:
             # skip the header line
             infile.next()
             for line in infile:
-                print 'yielding line'
+                #print 'yielding line'
                 yield line
-                time.sleep(0.01)
+                time.sleep(1)
 
     def __enter__(self):
         return self
@@ -67,7 +67,7 @@ def main():
             one2many = ProducerToManyClient()
             #middleware = WriteToFileMiddleware(datalines, filename, header)
             telem = TelemetryProducer(one2many, datalines)
-            #reactor.callFromThread(telem.resumeProducing)
+            reactor.callInThread(telem.resumeProducing)
             #telem.resumeProducing()
             factory.setSource(one2many)
             print('listening on a port')
