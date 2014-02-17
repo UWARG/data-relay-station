@@ -64,7 +64,7 @@ def main():
             #print('datalines: {}'.format(datalines))
         #with Receiver(db_type) as datalines:
             factory = TelemetryFactory()
-            one2many = ProducerToManyClient( factory )
+            one2many = ProducerToManyClient()
             #middleware = WriteToFileMiddleware(datalines, filename, header)
             telem = TelemetryProducer(one2many, datalines)
             #reactor.callFromThread(telem.resumeProducing)

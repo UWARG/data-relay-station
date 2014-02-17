@@ -6,21 +6,24 @@ from zope.interface import implements
 
 
 
-class ProducerToManyClient(Protocol):
+class ProducerToManyClient:
+    implements(interfaces.IConsumer)
 
-    def __init__(self, factory):
+    def __init__(self):
         print('initing {}'.format(self.__class__))
-        self.factory = factory
+        self.clients = []
 
-    def connectionMade(self):
-        self.factory.clients.append(self)
+    def addClient(self, client):
+        print('client added to one2many made')
+        self.clients.append(self)
 
-    def dataReceived(self, data):
-        for client in self.factory.clients:
+    def write(self, data):
+        print('one2many received data')
+        for client in self.clients:
             client.transport.write(data)
 
-    def connectionLost(self, reason):
-        self.factory.clients.remove(self)
+    def removeClient(self, client, reason):
+        self.clients.remove(client)
 
 
 class ProducerConsumerBufferProxy:
@@ -33,6 +36,7 @@ class ProducerConsumerBufferProxy:
         self._buffer = deque(maxlen = 10)
         self._producer = producer
         self._consumer = consumer
+        self._producer.addClient(self)
     
     def pauseProducing(self):
         self._paused = True
@@ -60,7 +64,7 @@ class ServeTelemetry(LineReceiver):
             # TODO: setup controlling client
             self._firstConnect = False
         # TODO: handshake stuff
-        proxy = ProducerConsumerBufferProxy(self, self._producer)
+        proxy = ProducerConsumerBufferProxy(self._producer, self)
         self.transport.registerProducer(proxy, True)
         proxy.resumeProducing()
         pass

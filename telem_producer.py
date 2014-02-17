@@ -8,8 +8,8 @@ class TelemetryProducer:
     def __init__(self, consumer, gen):
         print('initing {}'.format(self.__class__))
         print(consumer)
-        self._gen = gen
         self._consumer = consumer
+        self._gen = gen
         self._paused = False
 
     def resumeProducing(self):
@@ -18,5 +18,12 @@ class TelemetryProducer:
             #print('{}'.format(i))
             self._consumer.protocol.write(i)
 
-    def stopProducing(self):
-        pass
+    def connectionMade(self):
+        self.factory.clients.append(self)
+
+    def dataReceived(self, data):
+        for client in self.factory.clients:
+            client.transport.write(data)
+
+    def connectionLost(self, reason):
+        self.factory.clients.remove(self)
