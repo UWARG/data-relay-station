@@ -39,7 +39,7 @@ class DatalinkSimulator:
             for line in infile:
                 #print 'yielding line'
                 yield line
-                time.sleep(1)
+                time.sleep(0.1)
 
     def __enter__(self):
         return self
@@ -67,12 +67,12 @@ def main():
             one2many = ProducerToManyClient()
             #middleware = WriteToFileMiddleware(datalines, filename, header)
             telem = TelemetryProducer(one2many, datalines)
-            reactor.callInThread(telem.resumeProducing)
             #telem.resumeProducing()
             factory.setSource(one2many)
             print('listening on a port')
             reactor.listenTCP(1234, factory)
             print('running reactor')
+            reactor.callInThread(telem.resumeProducing)
             reactor.run()
     except KeyboardInterrupt:
         print("Capture interrupted by user")

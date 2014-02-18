@@ -45,6 +45,10 @@ class ProducerConsumerBufferProxy:
         self._paused = False
         for data in self._buffer:
             self._consumer.transport.write(data)
+        self._buffer.clear()
+
+    def unregisterProducer(self):
+        self._producer.removeClient(self)
 
     def stopProducing(self):
         pass
@@ -65,20 +69,21 @@ class ServeTelemetry(LineReceiver):
             # TODO: setup controlling client
             self._firstConnect = False
         # TODO: handshake stuff
-        proxy = ProducerConsumerBufferProxy(self._producer, self)
-        self.transport.registerProducer(proxy, True)
-        proxy.resumeProducing()
+        self.proxy = ProducerConsumerBufferProxy(self._producer, self)
+        self.transport.registerProducer(self.proxy, True)
+        self.proxy.resumeProducing()
         pass
 
     def lineReceived(self, line):
         # TODO: continue handshake
         print('from {} received line {}'.format(
             self.transport.getPeer(), line))
-        pass
 
 
     def connectionLost(self, reason):
         print('connection lost from {}'.format(self.transport.getPeer()))
+        self.transport.unregisterProducer()
+
 
 class TelemetryFactory(Factory):
 
