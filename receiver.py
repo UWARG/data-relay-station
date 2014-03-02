@@ -21,16 +21,14 @@ class WriteToFileMiddleware:
         # write header line out to file
         print('writing headers')
         with open(self.filename, 'w') as outfile:
-            outfile.write("{}\n".format(self.header))
+            outfile.write("{}\r\n".format(self.header))
 
         for line in self.gen.data_lines():
-            print('writing line to file')
             # write element to file
-            with open(self.filename, 'a+w') as outfile:
-                outfile.write(','.join([str(i) for i in line]))
-                outfile.write('\n')
+            with open(self.filename, 'a') as outfile:
+                outfile.write(line)
             # re-yield element
-            yield i
+            yield line
 
 
 class Receiver:

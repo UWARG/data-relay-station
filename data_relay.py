@@ -65,7 +65,7 @@ def main():
             factory = TelemetryFactory()
             one2many = ProducerToManyClient()
             #middleware = WriteToFileMiddleware(datalines, filename, header)
-            telem = TelemetryProducer(one2many, datalines)
+            telem = TelemetryProducer(one2many, WriteToFileMiddleware(datalines, filename, header))
             #telem.resumeProducing()
             factory.setSource(one2many)
             print('listening on a port')
