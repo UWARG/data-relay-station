@@ -71,7 +71,7 @@ def main():
             print('listening on a port')
             reactor.listenTCP(1234, factory)
             print('running reactor')
-            reactor.callInThread(telem.resumeProducing)
+            threads.deferToThread(telem.resumeProducing)
             reactor.run()
     except KeyboardInterrupt:
         print("Capture interrupted by user")
