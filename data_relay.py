@@ -39,7 +39,7 @@ class DatalinkSimulator:
             for line in infile:
                 #print 'yielding line'
                 yield line
-                time.sleep(0.1)
+                time.sleep(0.5)
 
     def __enter__(self):
         return self
