@@ -39,13 +39,14 @@ class ProducerConsumerBufferProxy:
         self._producer.addClient(self)
     
     def pauseProducing(self):
+        print('pausing {}'.format(
+            self._consumer.transport.getPeer()))
         self._paused = True
 
     def resumeProducing(self):
+        print('resuming {}'.format(
+            self._consumer.transport.getPeer()))
         self._paused = False
-        for data in self._buffer:
-            self._consumer.transport.write(data)
-        self._buffer.clear()
 
     def unregisterProducer(self):
         self._producer.removeClient(self)
@@ -55,7 +56,10 @@ class ProducerConsumerBufferProxy:
 
     def write(self, data):
         self._buffer.append(data)
-        self.resumeProducing()
+        if not self._paused:
+            for data in self._buffer:
+                self._consumer.transport.write(data)
+            self._buffer.clear()
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
@@ -72,7 +76,6 @@ class ServeTelemetry(LineReceiver):
         self.proxy = ProducerConsumerBufferProxy(self._producer, self)
         self.transport.registerProducer(self.proxy, True)
         self.proxy.resumeProducing()
-        pass
 
     def lineReceived(self, line):
         # TODO: continue handshake

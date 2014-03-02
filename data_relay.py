@@ -60,9 +60,8 @@ def main():
 
 
     try:
-        with DatalinkSimulator('flight_data1.csv') as datalines:
-            #print('datalines: {}'.format(datalines))
-        #with Receiver(db_type) as datalines:
+        #with DatalinkSimulator('flight_data1.csv') as datalines:
+        with Receiver(db_type) as datalines:
             factory = TelemetryFactory()
             one2many = ProducerToManyClient()
             #middleware = WriteToFileMiddleware(datalines, filename, header)
