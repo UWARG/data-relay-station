@@ -50,9 +50,18 @@ class Receiver:
             payload = ''
             for x in xrange(self.expected_packets):
                 packet = self.xbee.wait_read_frame()
+                source_addr_long = packet.get('source_addr_long', None)
+                source_addr = packet.get('source_addr', None)
+                while packet.get('id', None) == 'tx_status':
+                    print('got tx_status frame')
+                    packet = self.xbee.wait_read_frame()
+                #print(source_addr_long)
+                #print(source_addr)
+                #print packet
                 payload += packet['rf_data']
                 if x < self.expected_packets - 1 and len(payload) < 100:
                     break;
+            #self.xbee.tx(dest_addr_long=source_addr_long, dest_addr=source_addr, data='Hello world')
             yield self.data_shape.unpack(payload)
 
 
