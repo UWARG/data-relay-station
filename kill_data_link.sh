@@ -1,3 +1,3 @@
 #!/bin/sh
 
-kill -9 $(ps x | grep [d]ata_relay.py | cut -d ' ' -f 2)
+kill -9 $(ps x | grep '[p]ython data_relay.py' | cut -d ' ' -f 1)
