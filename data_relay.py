@@ -73,13 +73,14 @@ def main():
         with Receiver(db_type) as datalines:
             factory = TelemetryFactory()
             one2many = ProducerToManyClient()
-            #middleware = WriteToFileMiddleware(datalines, filename, header)
-            telem = TelemetryProducer(one2many, WriteToFileMiddleware(datalines, filename, header))
-            #telem.resumeProducing()
+            telem = TelemetryProducer(one2many,
+                    WriteToFileMiddleware(datalines, filename, header))
             factory.setSource(one2many)
+
             print('listening on a port')
             reactor.listenTCP(1234, factory)
             print('running reactor')
+
             threads.deferToThread(telem.resumeProducing)
             reactor.run()
     except KeyboardInterrupt:
