@@ -6,9 +6,9 @@ from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 
 db_type = (
-        ('q', 'time'),
         ('d', 'lat'),
         ('d', 'lon'),
+        ('f', 'time'),
         ('f', 'pitch'),
         ('f', 'roll'),
         ('f', 'yaw'),
@@ -18,12 +18,21 @@ db_type = (
         ('f', 'pitch_gain'),
         ('f', 'roll_gain'),
         ('f', 'yaw_gain'),
-        ('h', 'pitch_setpoint'),
-        ('h', 'roll_setpoint'),
-        ('h', 'yaw_setpoint'),
-        ('h', 'throttle_setpoint'),
+        ('f', 'heading'),
+        ('f', 'ground_speed'),
+        ('f', 'pitch_setpoint'),
+        ('f', 'roll_setpoint'),
+        ('f', 'heading_setpoint'),
+        ('f', 'throttle_setpoint'),
+        ('f', 'altitude_setpoint'),
+        ('f', 'altitude'),
+        ('h', 'int_pitch_setpoint'),
+        ('h', 'int_roll_setpoint'),
+        ('h', 'int_yaw_setpoint'),
+        ('h', 'int_throttle_setpoint'),
         ('B', 'editing_gain'),
-        ('x', 'one byte of padding'),
+        ('B', 'gpsStatus'),
+        #('x', 'one byte of padding'),
         )
 
 class DatalinkSimulator:
