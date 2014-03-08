@@ -38,6 +38,14 @@ class Receiver:
             ''.join(map(lambda x: x[0], db_type)))
         self.data_size = self.data_shape.size
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
+        self.source_addr = None
+        self.source_addr_long = None
+        self.outbound = []
+
+    def async_tx(self, command):
+        """Eventually send a command
+        """
+        self.outbound.append(command)
 
     def __enter__(self):
         self.ser = serial.Serial('/dev/ttyUSB0', 38400)
@@ -49,20 +57,31 @@ class Receiver:
         while True:
             payload = ''
             for x in xrange(self.expected_packets):
+
                 packet = self.xbee.wait_read_frame()
-                source_addr_long = packet.get('source_addr_long', None)
-                source_addr = packet.get('source_addr', None)
                 while packet.get('id', None) == 'tx_status':
                     print('got tx_status frame')
                     packet = self.xbee.wait_read_frame()
-                #print(source_addr_long)
-                #print(source_addr)
-                #print packet
+                self.source_addr_long = packet.get(
+                        'source_addr_long', self.source_addr_long)
+                self.source_addr = packet.get(
+                        'source_addr', self.source_addr)
+
                 payload += packet['rf_data']
                 if x < self.expected_packets - 1 and len(payload) < 100:
                     break;
-            #self.xbee.tx(dest_addr_long=source_addr_long, dest_addr=source_addr, data='Hello world')
+
+            # let our data be processed
             yield self.data_shape.unpack(payload)
+
+            # flush the command queue to the xbee
+            for cmd in self.outbound:
+                self.xbee.tx(dest_addr_long=self.source_addr_long,
+                        dest_addr=self.source_addr, data=cmd)
+                print "sent a command"
+            self.outbound = []
+            #self.xbee.tx(dest_addr_long=source_addr_long,
+            #        dest_addr=source_addr, data=b'Hello world')
 
 
     def __exit__(self, type, value, traceback):

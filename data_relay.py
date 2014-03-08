@@ -71,7 +71,7 @@ def main():
     try:
         #with DatalinkSimulator('flight_data1.csv') as datalines:
         with Receiver(db_type) as datalines:
-            factory = TelemetryFactory()
+            factory = TelemetryFactory(datalines)
             one2many = ProducerToManyClient()
             telem = TelemetryProducer(one2many,
                     WriteToFileMiddleware(datalines, filename, header))

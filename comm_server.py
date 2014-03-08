@@ -4,6 +4,7 @@ from twisted.internet.protocol import Protocol, Factory
 from twisted.internet import interfaces
 from zope.interface import implements
 
+from command import CommandParser
 
 
 class ProducerToManyClient:
@@ -63,22 +64,28 @@ class ProducerConsumerBufferProxy:
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
-    def __init__(self, producer):
+    def __init__(self, producer, raw_source):
         print('initing {}'.format(self.__class__))
         self._producer = producer
-        self._firstConnect = True
+        self._is_commander = False
+        self._raw_telemetry_source = raw_source
+        self._command_parser = CommandParser()
 
     def connectionMade(self):
-        if self._firstConnect:
-            # TODO: setup controlling client
-            self._firstConnect = False
-        # TODO: handshake stuff
         self.proxy = ProducerConsumerBufferProxy(self._producer, self)
         self.transport.registerProducer(self.proxy, True)
         self.proxy.resumeProducing()
 
     def lineReceived(self, line):
-        # TODO: continue handshake
+        if line == 'commander':
+            self._is_commander = True
+            self._command_parser
+        elif self._is_commander:
+            valid, command = self._command_parser.parse_command(line.rstrip())
+            if valid:
+                self._raw_telemetry_source.async_tx(command)
+            else:
+                print('command not valid')
         print('from {} received line {}'.format(
             self.transport.getPeer(), line))
 
@@ -90,13 +97,12 @@ class ServeTelemetry(LineReceiver):
 
 class TelemetryFactory(Factory):
 
-    def __init__(self):
+    def __init__(self, raw_source):
         self.clients = []
+        self._raw_source = raw_source
 
     def setSource(self, telemetrySource):
         self._telemetrySource = telemetrySource
 
     def buildProtocol(self, addr):
-        return ServeTelemetry(self._telemetrySource)
-
-#class LoggingConsumer(
+        return ServeTelemetry(self._telemetrySource, self._raw_source)
