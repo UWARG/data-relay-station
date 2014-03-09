@@ -1,14 +1,15 @@
 import serial
 import struct
 from xbee import XBee
+rom sys import platform as _platform
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
 
 db_type = (
-        ('q', 'time'),
         ('d', 'lat'),
         ('d', 'lon'),
+        ('f', 'time'),
         ('f', 'pitch'),
         ('f', 'roll'),
         ('f', 'yaw'),
@@ -18,12 +19,21 @@ db_type = (
         ('f', 'pitch_gain'),
         ('f', 'roll_gain'),
         ('f', 'yaw_gain'),
-        ('h', 'pitch_setpoint'),
-        ('h', 'roll_setpoint'),
-        ('h', 'yaw_setpoint'),
-        ('h', 'throttle_setpoint'),
+        ('f', 'heading'),
+        ('f', 'ground_speed'),
+        ('f', 'pitch_setpoint'),
+        ('f', 'roll_setpoint'),
+        ('f', 'heading_setpoint'),
+        ('f', 'throttle_setpoint'),
+        ('f', 'altitude_setpoint'),
+        ('f', 'altitude'),
+        ('h', 'int_pitch_setpoint'),
+        ('h', 'int_roll_setpoint'),
+        ('h', 'int_yaw_setpoint'),
+        ('h', 'int_throttle_setpoint'),
         ('B', 'editing_gain'),
-        ('x', 'one byte of padding'),
+        ('B', 'gpsStatus'),
+        #('x', 'one byte of padding'),
         )
 
 def main():
@@ -33,7 +43,10 @@ def main():
     expected_packets = data_size / MAX_PACKET_SIZE + 1
 
     try:
-        ser = serial.Serial('/dev/ttyUSB0', 38400)
+        if _platform == "linux" or _platform == "linux2":
+            ser = serial.Serial('/dev/ttyUSB0', 38400)
+        elif _platform == "win32":
+            self.ser = serial.Serial('COM5', 38400
         xbee = XBee(ser)
         print 'xbee created/initialized'
 

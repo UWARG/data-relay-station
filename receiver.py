@@ -1,6 +1,7 @@
 import serial
 import struct
 from xbee.zigbee import ZigBee
+from sys import platform as _platform
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
@@ -26,7 +27,7 @@ class WriteToFileMiddleware:
         for line in self.gen.data_lines():
             # write element to file
             with open(self.filename, 'a') as outfile:
-                outfile.write(str(line))
+                outfile.write(str(line).replace('(','') + '\n')
             # re-yield element
             yield line
 
@@ -48,7 +49,10 @@ class Receiver:
         self.outbound.append(command)
 
     def __enter__(self):
-        self.ser = serial.Serial('/dev/ttyUSB0', 38400)
+        if _platform == "linux" or _platform == "linux2":
+            self.ser = serial.Serial('/dev/ttyUSB0', 38400)
+        elif _platform == "win32":
+            self.ser = serial.Serial('COM5', 38400)
         self.xbee = ZigBee(self.ser)
         print 'xbee created/initialized'
         return self

@@ -61,7 +61,7 @@ class DatalinkSimulator:
 
 def main():
 
-    filename = "flight_data {}.csv".format(datetime.datetime.now())
+    filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
     print "writing to file called '{}'".format(filename)
 
             
