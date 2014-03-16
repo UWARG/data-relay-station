@@ -51,6 +51,12 @@ class DatalinkSimulator:
                 yield line
                 time.sleep(0.5)
 
+    def async_tx(self, command):
+        """Fake sending a command, since we obviously don't have anywhere
+        to send it.
+        """
+        print("Noob is trying to send a command to a simulated plane LOL")
+
     def __enter__(self):
         return self
 

@@ -77,6 +77,8 @@ class ServeTelemetry(LineReceiver):
         self.proxy.resumeProducing()
 
     def lineReceived(self, line):
+        print('from {} received line {}'.format(
+            self.transport.getPeer(), line))
         if line == 'commander':
             self._is_commander = True
             self._command_parser
@@ -86,8 +88,6 @@ class ServeTelemetry(LineReceiver):
                 self._raw_telemetry_source.async_tx(command)
             else:
                 print('command not valid')
-        print('from {} received line {}'.format(
-            self.transport.getPeer(), line))
 
 
     def connectionLost(self, reason):
