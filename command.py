@@ -34,7 +34,7 @@ command_types = {
     'set_heading':  {'cmd':29,   'type':'f'},
     'set_throttle':  {'cmd':30,   'type':'f'},
     'tare_IMU':  {'cmd':31,   'type':None},
-    'set_autonomousLevel':  {'cmd':32,   'type':'B'},    
+    'set_autonomousLevel':  {'cmd':32,   'type':'h'},    
 }
 
 multipart_command_types = {
@@ -61,6 +61,9 @@ class CommandParser:
                 compiled_cmd += bytearray(values)
             else:
                 realval = eval(values) # THIS IS REALLY BAD, DON'T DO THIS
-                compiled_cmd += struct.pack('f', realval)
+                print realval
+                compiled_cmd += struct.pack(command_types.get(cmd_type).get('type'), realval)
+                print ":".join("{}".format(hex(c)) for c in compiled_cmd)
+
             return True, compiled_cmd
         return False, None

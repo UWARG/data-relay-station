@@ -1,3 +1,6 @@
 *.pyc
 *.log
 *.csv
+xbee/
+zope/
+.gitignore
