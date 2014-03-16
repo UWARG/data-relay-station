@@ -82,6 +82,7 @@ class Receiver:
             for cmd in self.outbound:
                 self.xbee.tx(dest_addr_long=self.source_addr_long,
                         dest_addr=self.source_addr, data=cmd)
+                print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
                 print "sent a command"
             self.outbound = []
             #self.xbee.tx(dest_addr_long=source_addr_long,

@@ -1,4 +1,5 @@
 import datetime, time
+import argparse
 
 from twisted.internet import reactor, threads
 from receiver import Receiver, WriteToFileMiddleware
@@ -59,7 +60,7 @@ class DatalinkSimulator:
         print('end of traceback')
         pass
 
-def main():
+def main(sim_file=None):
 
     filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
     print "writing to file called '{}'".format(filename)
@@ -69,8 +70,12 @@ def main():
 
 
     try:
-        #with DatalinkSimulator('flight_data1.csv') as datalines:
-        with Receiver(db_type) as datalines:
+        if sim_file:
+            intermediate = DatalinkSimulator(sim_file)
+        else:
+            intermediate = Receiver(db_type)
+
+        with intermediate as datalines:
             factory = TelemetryFactory(datalines)
             one2many = ProducerToManyClient()
             telem = TelemetryProducer(one2many,
@@ -89,4 +94,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
+    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay")
+    args = parser.parse_args()
+    main(sim_file=args.simfile)
