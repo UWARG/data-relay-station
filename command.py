@@ -42,7 +42,7 @@ command_types = {
 }
 
 multipart_command_types = {
-    'new_waypoint':             {'cmd':128, 'type':'hffff'},
+    'new_Waypoint':             {'cmd':128, 'type':'ddff'},
     'tare_IMU':                 {'cmd':129,  'type':'fff'},
     'set_IMU':                 {'cmd':130,  'type':'fff'},
 }

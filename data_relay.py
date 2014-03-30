@@ -49,7 +49,7 @@ class DatalinkSimulator:
             for line in infile:
                 #print 'yielding line'
                 yield line
-                time.sleep(0.5)
+                time.sleep(0.2)
 
     def async_tx(self, command):
         """Fake sending a command, since we obviously don't have anywhere
