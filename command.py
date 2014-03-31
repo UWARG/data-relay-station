@@ -38,6 +38,7 @@ command_types = {
     'set_gyroVariance':         {'cmd':33,  'type':'f'},
     'set_magneticVariance':     {'cmd':34,  'type':'f'},
     'set_accelVariance':        {'cmd':35,  'type':'f'},
+    'set_scaleFactor':          {'cmd':36,  'type':'f'},
     
 }
 
