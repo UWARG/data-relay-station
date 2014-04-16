@@ -39,6 +39,7 @@ command_types = {
     'set_magneticVariance':     {'cmd':34,  'type':'f'},
     'set_accelVariance':        {'cmd':35,  'type':'f'},
     'set_scaleFactor':          {'cmd':36,  'type':'f'},
+    'calibrate_altimeter':      {'cmd':37,  'type':'f'},
     
 }
 
