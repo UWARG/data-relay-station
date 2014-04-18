@@ -40,7 +40,7 @@ command_types = {
     'set_accelVariance':        {'cmd':35,  'type':'f'},
     'set_scaleFactor':          {'cmd':36,  'type':'f'},
     'calibrate_altimeter':      {'cmd':37,  'type':'f'},
-    'clear_waypoints':          {'cmd':38,  'type':None},
+    'clear_waypoints':          {'cmd':38,  'type':'B'},
     'remove_waypoint':          {'cmd':39,  'type':'B'},
     'set_currentWaypoint':      {'cmd':40,  'type':'B'},
     
