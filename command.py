@@ -40,13 +40,18 @@ command_types = {
     'set_accelVariance':        {'cmd':35,  'type':'f'},
     'set_scaleFactor':          {'cmd':36,  'type':'f'},
     'calibrate_altimeter':      {'cmd':37,  'type':'f'},
+    'clear_waypoints':          {'cmd':38,  'type':None},
+    'remove_waypoint':          {'cmd':39,  'type':'B'},
+    'set_currentWaypoint':      {'cmd':40,  'type':'B'},
+    
     
 }
 
 multipart_command_types = {
     'new_Waypoint':             {'cmd':128, 'type':'ddff'},
-    'tare_IMU':                 {'cmd':129,  'type':'fff'},
-    'set_IMU':                 {'cmd':130,  'type':'fff'},
+    'insert_Waypoint':          {'cmd':129, 'type':'ddffBB'},
+    'tare_IMU':                 {'cmd':130,  'type':'fff'},
+    'set_IMU':                  {'cmd':131,  'type':'fff'},
 }
 
 class CommandParser:
