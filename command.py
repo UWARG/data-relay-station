@@ -42,7 +42,8 @@ command_types = {
     'calibrate_altimeter':      {'cmd':37,  'type':'f'},
     'clear_waypoints':          {'cmd':38,  'type':'B'},
     'remove_waypoint':          {'cmd':39,  'type':'B'},
-    'set_currentWaypoint':      {'cmd':40,  'type':'B'},
+    'set_targetWaypoint':       {'cmd':40,  'type':'B'},
+    'return_home':              {'cmd':41,  'type':'B'},
     
     
 }
@@ -50,8 +51,9 @@ command_types = {
 multipart_command_types = {
     'new_Waypoint':             {'cmd':128, 'type':'ddff'},
     'insert_Waypoint':          {'cmd':129, 'type':'ddffBB'},
-    'tare_IMU':                 {'cmd':130,  'type':'fff'},
-    'set_IMU':                  {'cmd':131,  'type':'fff'},
+    'set_ReturnHomeCoordinates':{'cmd':130, 'type':'ddf'},
+    'tare_IMU':                 {'cmd':131,  'type':'fff'},
+    'set_IMU':                  {'cmd':132,  'type':'fff'},
 }
 
 class CommandParser:

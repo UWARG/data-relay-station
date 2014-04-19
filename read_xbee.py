@@ -16,9 +16,9 @@ db_type = (
         ('f', 'pitch_rate'),
         ('f', 'roll_rate'),
         ('f', 'yaw_rate'),
-        ('f', 'pitch_gain'),
-        ('f', 'roll_gain'),
-        ('f', 'yaw_gain'),
+        ('f', 'kd_gain'),
+        ('f', 'kp_gain'),
+        ('f', 'ki_gain'),
         ('f', 'ground_speed'),
         ('f', 'altitude'),
         ('h', 'heading'),
@@ -30,11 +30,12 @@ db_type = (
         ('h', 'int_pitch_setpoint'),
         ('h', 'int_roll_setpoint'),
         ('h', 'int_yaw_setpoint'),
+        ('h', 'lastCommandSent'),
+        ('h', 'errorCodes'),
         ('B', 'waypointIndex'),
-        ('B', 'waypointChecksum'),
         ('B', 'editing_gain'),
         ('B', 'gpsStatus'),
-        #('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
         )
 
 def main():
