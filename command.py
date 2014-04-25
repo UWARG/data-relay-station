@@ -45,6 +45,8 @@ command_types = {
     'set_targetWaypoint':       {'cmd':40,  'type':'B'},
     'return_home':              {'cmd':41,  'type':'B'},
     'send_heartbeat':           {'cmd':42,  'type':'B'},
+    'trigger_camera':           {'cmd':43,  'type':'h'},
+    'set_triggerDistance':      {'cmd':44,  'type':'f'},
     
     
 }
