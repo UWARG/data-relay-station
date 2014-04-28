@@ -14,6 +14,7 @@ except:
         print 'Unable to connect'
         sys.exit()
 s.send("commander\r\n")
+s.send("cancel_returnHome:0\r\n")
 while True:
         s.send("send_heartbeat:0\r\n")
         print str(heartbeatNum) + (' Heartbeats' if heartbeatNum > 1 else ' Heartbeat') + ' sent successfully                              \r',

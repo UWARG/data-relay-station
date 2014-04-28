@@ -44,9 +44,11 @@ command_types = {
     'remove_waypoint':          {'cmd':39,  'type':'B'},
     'set_targetWaypoint':       {'cmd':40,  'type':'B'},
     'return_home':              {'cmd':41,  'type':'B'},
-    'send_heartbeat':           {'cmd':42,  'type':'B'},
-    'trigger_camera':           {'cmd':43,  'type':'h'},
-    'set_triggerDistance':      {'cmd':44,  'type':'f'},
+    'cancel_returnHome':        {'cmd':42,  'type':'B'},
+    'send_heartbeat':           {'cmd':43,  'type':'B'},
+    'trigger_camera':           {'cmd':44,  'type':'h'},
+    'set_triggerDistance':      {'cmd':45,  'type':'f'},
+    'set_gimbleOffset':         {'cmd':46,  'type':'h'},
     
     
 }
