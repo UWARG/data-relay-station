@@ -10,7 +10,7 @@ many client ground stations as desired.
 ```bash
 # TODO: Make this diagram prettier
 
-master ground station <=======IP/TCP====> base station <==XBEE==> plane
+master ground station <=======IP/TCP====> base station <==XBee==> plane
 tertiary ground station <===|
 tertiary ground station <===|
    .                        |
@@ -40,3 +40,23 @@ If you can't do that, you will need
 [python-xbee](https://code.google.com/p/python-xbee/downloads/list)
 and [argparse](https://docs.python.org/dev/library/argparse.html) (argparse is
 probably already installed with python, but not always).
+
+## Running
+
+To run the base station, open a shell or command prompt and change directory
+into the project root.
+
+To display help
+```
+$ python2.7 data_relay.py -h
+```
+
+To run the base station with the xbee connected
+```
+$ python2.7 data_relay.py
+```
+
+To run the base station without an XBee (useful for testing).
+```
+python2.7 data_relay.py --simfile FILENAME.csv
+```
