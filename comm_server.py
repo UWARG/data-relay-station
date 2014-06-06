@@ -64,16 +64,18 @@ class ProducerConsumerBufferProxy:
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
-    def __init__(self, producer, raw_source):
+    def __init__(self, producer, raw_source, header):
         print('initing {}'.format(self.__class__))
         self._producer = producer
         self._is_commander = False
         self._raw_telemetry_source = raw_source
         self._command_parser = CommandParser()
+        self._header = header
 
     def connectionMade(self):
         self.proxy = ProducerConsumerBufferProxy(self._producer, self)
         self.transport.registerProducer(self.proxy, True)
+        self.proxy.write(self._header+'\r\n')
         self.proxy.resumeProducing()
 
     def lineReceived(self, line):
@@ -97,12 +99,13 @@ class ServeTelemetry(LineReceiver):
 
 class TelemetryFactory(Factory):
 
-    def __init__(self, raw_source):
+    def __init__(self, raw_source, header):
         self.clients = []
         self._raw_source = raw_source
+        self._header= header
 
     def setSource(self, telemetrySource):
         self._telemetrySource = telemetrySource
 
     def buildProtocol(self, addr):
-        return ServeTelemetry(self._telemetrySource, self._raw_source)
+        return ServeTelemetry(self._telemetrySource, self._raw_source, self._header)

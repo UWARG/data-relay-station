@@ -85,7 +85,7 @@ def main(sim_file=None):
             intermediate = Receiver(db_type)
 
         with intermediate as datalines:
-            factory = TelemetryFactory(datalines)
+            factory = TelemetryFactory(datalines, header)
             one2many = ProducerToManyClient()
             telem = TelemetryProducer(one2many,
                     WriteToFileMiddleware(datalines, filename, header))
