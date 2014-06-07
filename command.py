@@ -49,6 +49,8 @@ command_types = {
     'trigger_camera':           {'cmd':44,  'type':'h'},
     'set_triggerDistance':      {'cmd':45,  'type':'f'},
     'set_gimbleOffset':         {'cmd':46,  'type':'h'},
+    'kill_plane':               {'cmd':47,  'type':'h'},
+    'unkill_plane':             {'cmd':48,  'type':'h'},
     
     
 }

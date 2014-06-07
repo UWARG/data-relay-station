@@ -32,11 +32,11 @@ db_type = (
         ('h', 'int_yaw_setpoint'),
         ('h', 'lastCommandSent'),
         ('h', 'errorCodes'),
+        ('h', 'cameraStatus'),
         ('B', 'waypointIndex'),
         ('B', 'editing_gain'),
         ('B', 'gpsStatus'),
-        ('B', 'cameraStatus'),
-#        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
         )
 
 class DatalinkSimulator:
