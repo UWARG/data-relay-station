@@ -1,7 +1,7 @@
 import serial
 import struct
 from xbee import XBee
-rom sys import platform as _platform
+from sys import platform as _platform
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
@@ -32,11 +32,12 @@ db_type = (
         ('h', 'int_yaw_setpoint'),
         ('h', 'lastCommandSent'),
         ('h', 'errorCodes'),
+        ('h', 'cameraStatus'),
         ('B', 'waypointIndex'),
         ('B', 'editing_gain'),
         ('B', 'gpsStatus'),
-        ('B', 'cameraStatus'),
-#        ('x', 'one byte of padding'),
+        ('B', 'batteryLevel'),
+        ('x', 'one byte of padding'),
         )
 
 def main():
