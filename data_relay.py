@@ -82,6 +82,8 @@ def main(sim_file=None):
     try:
         if sim_file:
             intermediate = DatalinkSimulator(sim_file)
+            with open(sim_file) as simfile:
+                header = simfile.readline()
         else:
             intermediate = Receiver(db_type)
 
