@@ -39,5 +39,6 @@ def main():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(description="A server to re-echo any data sent to it, as well as the history of all data for this session.")
+    args = parser.parse_args()
     main()
