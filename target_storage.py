@@ -1,8 +1,10 @@
+from collections import deque
 import argparse
 
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet import reactor
 
+MAX_HISTORY_SIZE = 200
 
 class MultiEcho(Protocol):
 
@@ -27,7 +29,7 @@ class MultiEchoFactory(Factory):
 
     def __init__(self):
         self.echoers = []
-        self.history = []
+        self.history = deque(maxlen = MAX_HISTORY_SIZE)
 
     def buildProtocol(self, addr):
         return MultiEcho(self)
