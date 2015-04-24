@@ -63,3 +63,17 @@ python2.7 data_relay.py --simfile FILENAME.csv
 ## Sample Flight Data
 
 Data collected from all flights is stored [here](https://drive.google.com/folderview?id=0BySpWXvmBM4JRm9seXBSNDVHNmM&usp=sharing). The data collected is stored in folders that are in alphabetical-sequential order, and all files are time stamped.
+
+## MultiEcho
+A server to re-echo any data sent to it. It will also transmit the history of data sent on initial connection.
+
+To run the multi echo server
+```
+$ python2.7 multi_echo.py
+```
+
+You can set the size of the history (default is 200)
+```
+# Set the history to 69
+$ python2.7 multi_echo.py --max_history 69
+```

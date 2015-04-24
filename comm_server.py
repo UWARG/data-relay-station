@@ -1,6 +1,6 @@
 from collections import deque
 from twisted.protocols.basic import LineReceiver
-from twisted.internet.protocol import Protocol, Factory
+from twisted.internet.protocol import Factory
 from twisted.internet import interfaces
 from zope.interface import implements
 
