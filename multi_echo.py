@@ -3,7 +3,8 @@
 from collections import deque
 import argparse, datetime, time
 
-from twisted.internet.protocol import Factory, Protocol
+from twisted.internet.protocol import Factory
+from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 
 DEFAULT_MAX_HISTORY_SIZE = 200
@@ -21,7 +22,7 @@ class EchoLogger:
         self.file.close()
 
 
-class MultiEcho(Protocol):
+class MultiEcho(LineReceiver):
 
     def __init__(self, factory):
         self.factory = factory
@@ -32,11 +33,11 @@ class MultiEcho(Protocol):
         self.factory.echoers.append(self)
         self.logger = EchoLogger(open(self.factory.filename, "a"))
 
-    def dataReceived(self, data):
+    def lineReceived(self, data):
         self.factory.history.append(data)
         self.logger.log(data)
         for echoer in self.factory.echoers:
-            echoer.transport.write(data)
+            echoer.transport.write(data+"\r\n")
 
     def connectionLost(self, reason):
         self.factory.echoers.remove(self)
