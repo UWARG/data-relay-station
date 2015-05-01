@@ -51,8 +51,7 @@ command_types = {
     'set_gimbleOffset':         {'cmd':46,  'type':'h'},
     'kill_plane':               {'cmd':47,  'type':'h'},
     'unkill_plane':             {'cmd':48,  'type':'h'},
-    
-    
+    'lock_goPro':               {'cmd':49,  'type':'h'},
 }
 
 multipart_command_types = {
