@@ -37,7 +37,8 @@ db_type = (
         ('B', 'editing_gain'),
         ('B', 'gpsStatus'),
         ('B', 'batteryLevel'),
-        #('x', 'one byte of padding'),
+        ('B', 'waypointCount'),
+        ('x', 'one byte of padding'),
         )
 
 class DatalinkSimulator:
