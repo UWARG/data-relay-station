@@ -89,9 +89,10 @@ class CommandParser:
             target = cmd_type
             cmd_type, values = values.split(':', 1)
 
-        if not DEVICES.has_key(target):
-            print 'Device has no address registered.'
-            return False, None
+            if not DEVICES.has_key(target):
+                print 'User tried to specify device, but device has no address registered.'
+                # TODO: Validate the devices registered have valid addresses
+                return False, None
 
         compiled_cmd = b''
         if cmd_type in multipart_command_types:
