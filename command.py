@@ -3,6 +3,11 @@
 import struct
 
 
+DEVICES = {
+        'mary-kate':'',     # ip address in hex
+        'ashley': '',
+}
+
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
     'set_pitchKDGain':          {'cmd':1,   'type':'f'},
@@ -64,6 +69,11 @@ multipart_command_types = {
     'set_IMU':                  {'cmd':132,  'type':'fff'},
 }
 
+class Command:
+    def __init__(self, command, target = None):
+        self._command = command
+        self._target = target
+
 class CommandParser:
 
     def __init__(self):
@@ -72,7 +82,17 @@ class CommandParser:
     def parse_command(self, cmd_str):
         if ':' not in cmd_str:
             return False, None
+
+        target = None
         cmd_type, values = cmd_str.split(':', 1)
+        if cmd_type != 'debug' and ':' in cmd_str:
+            target = cmd_type
+            cmd_type, values = values.split(':', 1)
+
+        if not DEVICES.has_key(target):
+            print 'Device has no address registered.'
+            return False, None
+
         compiled_cmd = b''
         if cmd_type in multipart_command_types:
             part_list = values.split(',')
@@ -87,7 +107,7 @@ class CommandParser:
 
             print("multipart command bytes")
             print(",".join("{}".format(hex(c)) for c in compiled_cmd))
-            return True, compiled_cmd
+            return True, Command(compiled_cmd, target)
 
         elif cmd_type in command_types:
             compiled_cmd = bytearray(
