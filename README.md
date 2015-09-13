@@ -11,12 +11,13 @@ many client ground stations as desired.
 # TODO: Make this diagram prettier
 
 master ground station <=======IP/TCP====> base station <==XBee==> plane
-tertiary ground station <===|
-tertiary ground station <===|
-   .                        |
-   .                        |
-   .                        |
-tertiary ground station <===/
+tertiary ground station <===|                                 |=> plane
+tertiary ground station <===|                                 |=> plane
+tertiary ground station <===|                                 |=> plane
+   .                        |                                 |    .
+   .                        |                                 |    .
+   .                        |                                 |    .
+tertiary ground station <===/                                 \=> plane
 ```
 
 ## Install
