@@ -4,8 +4,8 @@ import struct
 
 
 DEVICES = {
-        'mary-kate':'0013A20040B47E80',     # ip address in hex
-        'ashley': '0013A20040B37745',
+        'mary-kate':'\x00\x13\xA2\x00\x40\xB4\x7E\x80',     # ip address in hex
+        'ashley': '\x00\x13\xA2\x00\x40\xB3\x77\x45',
 }
 
 command_types = {
