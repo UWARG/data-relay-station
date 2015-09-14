@@ -121,5 +121,5 @@ class CommandParser:
                 compiled_cmd += struct.pack(command_types.get(cmd_type).get('type'), realval)
                 print ":".join("{}".format(hex(c)) for c in compiled_cmd)
 
-            return True, compiled_cmd
+            return True, Command(compiled_cmd, target)
         return False, None
