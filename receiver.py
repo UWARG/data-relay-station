@@ -52,7 +52,7 @@ class Receiver:
     def async_tx(self, command):
         """Eventually send a command
         """
-        self.outbound_queues.get(command._target).append(command._command)
+        self.outbound_queues[command._target].append(command._command)
 
     def __enter__(self):
         if _platform == "linux" or _platform == "linux2":
