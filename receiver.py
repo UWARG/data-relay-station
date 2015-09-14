@@ -81,9 +81,6 @@ class Receiver:
                 if x < self.expected_packets - 1 and len(payload) < 100:
                     break;
 
-            # let our data be processed
-            yield self.data_shape.unpack(payload)
-
             # The key describing the device
             device_key = None
             for device_name, device_ip in DEVICES.items():
@@ -91,6 +88,10 @@ class Receiver:
                     device_key = device_name
             if device_key is None:
                 print("No command queue for device, assuming legacy mode and using the general queue.")
+
+            # let our data be processed
+            yield [device_key,] + self.data_shape.unpack(payload))
+
             outbound = self.outbound_queues[device_key]
 
             # flush the command queue to the xbee

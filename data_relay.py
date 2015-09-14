@@ -55,7 +55,7 @@ class DatalinkSimulator:
             infile.next()
             for line in infile:
                 #print 'yielding line'
-                yield line
+                yield [None,] + line
                 time.sleep(0.2)
 
     def async_tx(self, command):
@@ -79,7 +79,7 @@ def main(sim_file=None):
     print "writing to file called '{}'".format(filename)
 
             
-    header = ','.join([i[1] for i in db_type if not i[0] == 'x'])
+    header = 'device,' + ','.join([i[1] for i in db_type if not i[0] == 'x'])
 
 
     try:
