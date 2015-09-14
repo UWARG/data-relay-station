@@ -87,12 +87,11 @@ class Receiver:
             # The key describing the device
             device_key = None
             for device_name, device_ip in DEVICES.items():
-                print self.source_addr_long
                 if device_ip == self.source_addr_long or device_ip == self.source_addr:
                     device_key = device_name
             if device_key is None:
                 print("No command queue for device, assuming legacy mode and using the general queue.")
-            outbound = self.outbound_queues[device_name]
+            outbound = self.outbound_queues[device_key]
 
             # flush the command queue to the xbee
             for cmd in outbound:
@@ -100,7 +99,7 @@ class Receiver:
                         dest_addr=self.source_addr, data=cmd)
                 print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
                 print("sent a command to {}".format(device_key))
-                self.outbound_queues.get(device_key).clear()
+            self.outbound_queues[device_key].clear()
             #self.xbee.tx(dest_addr_long=source_addr_long,
             #        dest_addr=source_addr, data=b'Hello world')
 
