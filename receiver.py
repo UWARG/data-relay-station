@@ -90,7 +90,7 @@ class Receiver:
                 print("No command queue for device, assuming legacy mode and using the general queue.")
 
             # let our data be processed
-            yield [device_key,] + self.data_shape.unpack(payload))
+            yield (device_key,) + self.data_shape.unpack(payload)
 
             outbound = self.outbound_queues[device_key]
 
