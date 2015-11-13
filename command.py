@@ -54,6 +54,13 @@ command_types = {
     'kill_plane':               {'cmd':47,  'type':'h'},
     'unkill_plane':             {'cmd':48,  'type':'h'},
     'lock_goPro':               {'cmd':49,  'type':'h'},
+    'arm_vehicle':              {'cmd':50,  'type':'h'},
+    'dearm_vehicle':            {'cmd':51,  'type':'h'},
+    'set_flap':                 {'cmd':52,  'type':'h'},
+    'set_flapKDGain':           {'cmd':53,  'type':'f'},
+    'set_flapKPGain':           {'cmd':54,  'type':'f'},
+    'set_flapKIGain':           {'cmd':55,  'type':'f'},
+
 }
 
 multipart_command_types = {
