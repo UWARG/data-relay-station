@@ -28,6 +28,7 @@ db_type = (
         ('h', 'roll_setpoint'),
         ('h', 'heading_setpoint'),
         ('h', 'throttle_setpoint'),
+        ('h', 'flap_setpoint'),
         ('h', 'altitude_setpoint'),
         ('h', 'int_pitch_setpoint'),
         ('h', 'int_roll_setpoint'),
