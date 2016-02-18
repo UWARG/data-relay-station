@@ -70,6 +70,9 @@ multipart_command_types = {
     'set_ReturnHomeCoordinates':{'cmd':130, 'type':'ddf'},
     'tare_IMU':                 {'cmd':131,  'type':'fff'},
     'set_IMU':                  {'cmd':132,  'type':'fff'},
+    'set_KDValues':              {'cmd':133,  'type':'fffffff'},
+    'set_KPValues':              {'cmd':134,  'type':'fffffff'},
+    'set_KIValues':              {'cmd':135,  'type':'fffffff'},
 }
 
 class CommandParser:
