@@ -6,7 +6,7 @@ from xbee.zigbee import ZigBee
 from sys import platform as _platform
 
 # The max allowed size for an api packet
-MAX_PACKET_SIZE = 100
+MAX_PACKET_SIZE = 256
 
 
 class WriteToFileMiddleware:
@@ -37,13 +37,17 @@ class WriteToFileMiddleware:
 class Receiver:
 
     def __init__(self, db_type):
+        #Change this
         self.data_shape = struct.Struct(
             ''.join(map(lambda x: x[0], db_type)))
         self.data_size = self.data_shape.size
-        self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
+        #self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
         self.source_addr_long = None
+        self.packet_type = None
         self.outbound = []
+        self.rssi = -100
+        self.stored_data = []
 
     def async_tx(self, command):
         """Eventually send a command
@@ -51,10 +55,11 @@ class Receiver:
         self.outbound.append(command)
 
     def __enter__(self):
+        #Change this to search for USB, Unhardcode the ports
         if _platform == "linux" or _platform == "linux2":
-            self.ser = serial.Serial('/dev/ttyUSB0', 38400)
+            self.ser = serial.Serial('/dev/ttyUSB0', 115200)
         elif _platform == "win32":
-            self.ser = serial.Serial('COM5', 38400)
+            self.ser = serial.Serial('COM5', 115200)
         self.xbee = ZigBee(self.ser)
         print 'xbee created/initialized'
         return self
@@ -72,13 +77,18 @@ class Receiver:
                         'source_addr_long', self.source_addr_long)
                 self.source_addr = packet.get(
                         'source_addr', self.source_addr)
+                self.rssi = packet.get('rssi', self.source_addr)
 
                 payload += packet['rf_data']
-                if x < self.expected_packets - 1 and len(payload) < 100:
-                    break;
 
-            # let our data be processed
-            yield self.data_shape.unpack(payload)
+                # Read first two bytes, to determine packet type
+                self.packet_type = int(payload[:2], 2)
+
+                # Unpack Struct according to ID, and update global parameters
+                self.stored_data[self.packet_type] = self.data_shape[self.packet_type].unpack(payload)
+
+            # let our data be processed - unpacks an array of tuples into one single tuple
+            yield [i for sub in self.stored_data for i in sub]
 
             # flush the command queue to the xbee
             for cmd in self.outbound:
@@ -87,8 +97,6 @@ class Receiver:
                 print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
                 print "sent a command"
             self.outbound = []
-            #self.xbee.tx(dest_addr_long=source_addr_long,
-            #        dest_addr=source_addr, data=b'Hello world')
 
 
     def __exit__(self, type, value, traceback):
