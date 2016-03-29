@@ -92,11 +92,11 @@ class Receiver:
                 #Preallocate space
                 stored_data = '' 
                 # Unpack Struct according to ID, and update global parameters
-                for i in xrange(3):
+                for i in xrange(len(self.data_shape)):
                     if (self.packet_type == i):
                         stored_data += self.data_shape[self.packet_type].unpack(payload)
                     else:
-                        stored_data += self.data_shape[self.packet_type].unpack(','*len(self.data_shape))
+                        stored_data += self.data_shape[self.packet_type].unpack(','*self.data_size)
                     
 
             # let our data be processed - unpacks an array of tuples into one single tuple
