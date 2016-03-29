@@ -37,17 +37,22 @@ class WriteToFileMiddleware:
 class Receiver:
 
     def __init__(self, db_type):
-        #Change this
-        self.data_shape = struct.Struct(
-            ''.join(map(lambda x: x[0], db_type)))
-        self.data_size = self.data_shape.size
-        #self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
+        self.data_shape = [struct.Struct(
+            ''.join(map(lambda x: x[0], packet))) for packet in db_type]
+
+        #Check if all packets have the same size
+        self.data_size = self.data_shape[0].size
+##        for i in xrange(1,len(self.data_shape)):
+##            if (self.data_shape[i].size != self.data_size):
+##                print("Data Packets are not the same in size: " + self.data_size + " " + self.data_shape[i].size)
+        
+        
+        self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
         self.source_addr_long = None
         self.packet_type = None
         self.outbound = []
         self.rssi = -100
-        self.stored_data = []
 
     def async_tx(self, command):
         """Eventually send a command
@@ -84,11 +89,18 @@ class Receiver:
                 # Read first two bytes, to determine packet type
                 self.packet_type = int(payload[:2], 2)
 
+                #Preallocate space
+                stored_data = '' 
                 # Unpack Struct according to ID, and update global parameters
-                self.stored_data[self.packet_type] = self.data_shape[self.packet_type].unpack(payload)
+                for i in xrange(3):
+                    if (self.packet_type == i):
+                        stored_data += self.data_shape[self.packet_type].unpack(payload)
+                    else:
+                        stored_data += self.data_shape[self.packet_type].unpack(','*len(self.data_shape))
+                    
 
             # let our data be processed - unpacks an array of tuples into one single tuple
-            yield [i for sub in self.stored_data for i in sub]
+            yield stored_data
 
             # flush the command queue to the xbee
             for cmd in self.outbound:

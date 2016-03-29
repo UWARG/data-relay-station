@@ -8,7 +8,9 @@ from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 
-db_type = [(
+db_type =(
+        (
+        ('h', 'PacketID'), #1
         ('d', 'lat'),
         ('d', 'lon'),
         ('l', 'sys_time'),
@@ -22,9 +24,10 @@ db_type = [(
         ('f', 'airspeed'),
         ('f', 'altitude'),
         ('f', 'ground_speed'),
-        ('h', 'heading'),
+        ('h', 'heading')
         ),
         (
+        ('h', 'PacketID'), #2
         ('h', 'last_command_sent'),
         ('h', 'battery_level1'),
         ('h', 'battery_level2'),
@@ -61,9 +64,10 @@ db_type = [(
         ('B', 'waypoint_count'),
         ('B', 'waypoint_index'),
         ('B', 'path_following'),
-        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding')
         ),
         (
+        ('h', 'PacketID'), #3
         ('f', 'roll_kd'),
         ('f', 'roll_kp'),
         ('f', 'roll_ki'),
@@ -89,7 +93,7 @@ db_type = [(
         ('f', 'orbit_gain'),
         ('h', 'camera_status'),
         )
-            ]
+        )
 
 class DatalinkSimulator:
 
@@ -126,8 +130,9 @@ def main(sim_file=None):
     filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
     print "writing to file called '{}'".format(filename)
 
+    #TODO: Add check to ensure all 3 packets are the same size
             
-    header = ','.join([i[1] for i in db_type if not i[0] == 'x'])
+    header = ','.join([i[1] for j in db_type for i in j if not i[0] == 'x'])
 
 
     try:
