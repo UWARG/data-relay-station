@@ -8,9 +8,12 @@ from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 
-db_type =(
-        (
-        ('h', 'PacketID'), #1
+HIGH_FREQ = 1
+MED_FREQ = 2
+LOW_FREQ = 3
+
+db_type ={
+        HIGH_FREQ: (
         ('d', 'lat'),
         ('d', 'lon'),
         ('l', 'sys_time'),
@@ -24,10 +27,43 @@ db_type =(
         ('f', 'airspeed'),
         ('f', 'altitude'),
         ('f', 'ground_speed'),
-        ('h', 'heading')
+        ('h', 'heading'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
         ),
-        (
-        ('h', 'PacketID'), #2
+        MED_FREQ: (
         ('h', 'last_command_sent'),
         ('h', 'battery_level1'),
         ('h', 'battery_level2'),
@@ -64,10 +100,39 @@ db_type =(
         ('B', 'waypoint_count'),
         ('B', 'waypoint_index'),
         ('B', 'path_following'),
-        ('x', 'one byte of padding')
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
         ),
-        (
-        ('h', 'PacketID'), #3
+        LOW_FREQ:(
         ('f', 'roll_kd'),
         ('f', 'roll_kp'),
         ('f', 'roll_ki'),
@@ -92,8 +157,10 @@ db_type =(
         ('f', 'path_gain'),
         ('f', 'orbit_gain'),
         ('h', 'camera_status'),
+        ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
         )
-        )
+        }
 
 class DatalinkSimulator:
 
@@ -132,7 +199,7 @@ def main(sim_file=None):
 
     #TODO: Add check to ensure all 3 packets are the same size
             
-    header = ','.join([i[1] for j in db_type for i in j if not i[0] == 'x'])
+    header = ','.join([i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x'])
 
 
     try:

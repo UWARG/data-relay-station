@@ -37,15 +37,14 @@ class WriteToFileMiddleware:
 class Receiver:
 
     def __init__(self, db_type):
-        self.data_shape = [struct.Struct(
-            ''.join(map(lambda x: x[0], packet))) for packet in db_type]
+        self.data_shape = {key:struct.Struct(
+            ''.join(map(lambda x: x[0], packet))) for key, packet in db_type.iteritems()}
 
         #Check if all packets have the same size
-        self.data_size = self.data_shape[0].size
-##        for i in xrange(1,len(self.data_shape)):
-##            if (self.data_shape[i].size != self.data_size):
-##                print("Data Packets are not the same in size: " + self.data_size + " " + self.data_shape[i].size)
-        
+        self.data_size = self.data_shape[self.data_shape.keys()[0]].size
+        for i in xrange(1,len(self.data_shape)):
+            if (self.data_shape[i].size != self.data_size):
+                print("Data Packets are not the same in size: " + self.data_size + " " + self.data_shape[i].size)
         
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
@@ -62,9 +61,9 @@ class Receiver:
     def __enter__(self):
         #Change this to search for USB, Unhardcode the ports
         if _platform == "linux" or _platform == "linux2":
-            self.ser = serial.Serial('/dev/ttyUSB0', 115200)
+            self.ser = serial.Serial('/dev/ttyUSB0', 38400)#TODO: Change to 115200
         elif _platform == "win32":
-            self.ser = serial.Serial('COM5', 115200)
+            self.ser = serial.Serial('COM5', 38400)#TODO: Change to 115200
         self.xbee = ZigBee(self.ser)
         print 'xbee created/initialized'
         return self
@@ -82,21 +81,25 @@ class Receiver:
                         'source_addr_long', self.source_addr_long)
                 self.source_addr = packet.get(
                         'source_addr', self.source_addr)
-                self.rssi = packet.get('rssi', self.source_addr)
+
+                #TODO: Implement RSSI
+                #self.rssi = packet['rssi']
+                #print self.rssi
 
                 payload += packet['rf_data']
 
                 # Read first two bytes, to determine packet type
-                self.packet_type = int(payload[:2], 2)
+                packet_type = struct.unpack("h",payload[:2])[0]
 
                 #Preallocate space
-                stored_data = '' 
+                stored_data = ()
+
                 # Unpack Struct according to ID, and update global parameters
-                for i in xrange(len(self.data_shape)):
-                    if (self.packet_type == i):
-                        stored_data += self.data_shape[self.packet_type].unpack(payload)
+                for data_type, data_shape in self.data_shape.iteritems():
+                    if (packet_type == data_type):
+                        stored_data += data_shape.unpack(payload)
                     else:
-                        stored_data += self.data_shape[self.packet_type].unpack(','*self.data_size)
+                        stored_data += tuple([None] * len([i for i in data_shape.format if i != 'x']))
                     
 
             # let our data be processed - unpacks an array of tuples into one single tuple
