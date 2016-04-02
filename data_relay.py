@@ -8,9 +8,9 @@ from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 
-HIGH_FREQ = 1
-MED_FREQ = 2
-LOW_FREQ = 3
+HIGH_FREQ = 0
+MED_FREQ = 1
+LOW_FREQ = 2
 
 db_type ={
         HIGH_FREQ: (

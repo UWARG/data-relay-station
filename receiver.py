@@ -29,7 +29,7 @@ class WriteToFileMiddleware:
         for line in self.gen.data_lines():
             # write element to file
             with open(self.filename, 'a') as outfile:
-                outfile.write(str(line).replace('(','') + '\n')
+                outfile.write(str(line).replace('(','').replace(')','').replace('None','') + '\n')
             # re-yield element
             yield line
 
