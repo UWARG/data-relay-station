@@ -58,10 +58,6 @@ db_type ={
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
         ),
         MED_FREQ: (
         ('h', 'last_command_sent'),
@@ -93,6 +89,7 @@ db_type ={
         ('h', 'heading_setpoint'),
         ('h', 'altitude_setpoint'),
         ('h', 'flap_setpoint'),
+        ('h', 'camera_status'),
         ('B', 'wireless_connection'),
         ('B', 'autopilot_active'),
         ('B', 'gps_status'),
@@ -100,12 +97,6 @@ db_type ={
         ('B', 'waypoint_count'),
         ('B', 'waypoint_index'),
         ('B', 'path_following'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
@@ -156,15 +147,12 @@ db_type ={
         ('f', 'flap_ki'),
         ('f', 'path_gain'),
         ('f', 'orbit_gain'),
-        ('h', 'camera_status'),
-        ('x', 'one byte of padding'),
-        ('x', 'one byte of padding'),
         )
         }
 
 class DatalinkSimulator:
 
-    def __init__(self, filename):
+    def __init__(self, filename, speed):
         print('initing {}'.format(self.__class__))
         self._filename = filename
 
@@ -175,7 +163,7 @@ class DatalinkSimulator:
             for line in infile:
                 #print 'yielding line'
                 yield line
-                time.sleep(0.2)
+                time.sleep(speed)
 
     def async_tx(self, command):
         """Fake sending a command, since we obviously don't have anywhere
@@ -192,19 +180,21 @@ class DatalinkSimulator:
         print('end of traceback')
         pass
 
-def main(sim_file=None):
+def main(sim_file=None, sim_speed=0.2):
 
     filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
     print "writing to file called '{}'".format(filename)
 
     #TODO: Add check to ensure all 3 packets are the same size
-            
-    header = ','.join([i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x'])
+    list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
+    #Add additional fields here:
+    list_header.append('RSSI')
+    header = ','.join(list_header)
 
 
     try:
         if sim_file:
-            intermediate = DatalinkSimulator(sim_file)
+            intermediate = DatalinkSimulator(sim_file, sim_speed)
             with open(sim_file) as simfile:
                 header = simfile.readline()
         else:
@@ -231,5 +221,6 @@ def main(sim_file=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
     parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay")
+    parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame")
     args = parser.parse_args()
-    main(sim_file=args.simfile)
+    main(sim_file=args.simfile, sim_speed=args.simspeed)

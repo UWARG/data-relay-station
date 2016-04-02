@@ -6,7 +6,7 @@ from xbee.zigbee import ZigBee
 from sys import platform as _platform
 
 # The max allowed size for an api packet
-MAX_PACKET_SIZE = 256
+MAX_PACKET_SIZE = 100
 
 
 class WriteToFileMiddleware:
@@ -61,9 +61,9 @@ class Receiver:
     def __enter__(self):
         #Change this to search for USB, Unhardcode the ports
         if _platform == "linux" or _platform == "linux2":
-            self.ser = serial.Serial('/dev/ttyUSB0', 38400)#TODO: Change to 115200
+            self.ser = serial.Serial('/dev/ttyUSB0', 115200)
         elif _platform == "win32":
-            self.ser = serial.Serial('COM5', 38400)#TODO: Change to 115200
+            self.ser = serial.Serial('COM5', 115200)
         self.xbee = ZigBee(self.ser)
         print 'xbee created/initialized'
         return self
@@ -74,17 +74,21 @@ class Receiver:
             for x in xrange(self.expected_packets):
 
                 packet = self.xbee.wait_read_frame()
-                while packet.get('id', None) == 'tx_status':
-                    print('got tx_status frame')
+                self.xbee.at(command="DB")
+                while packet.get('id', None) != 'rx':
+                    #Checks for tx_response
+                    if packet.get('id', None) == 'tx_status':
+                        print('got tx_status frame')
+                    #Checks for command response and signal strength
+                    elif packet.get('id', None) == 'at_response':
+                        if packet.get('command', None) == 'DB':
+                            self.rssi = ord(packet.get('parameter',self.rssi))
                     packet = self.xbee.wait_read_frame()
+                    
                 self.source_addr_long = packet.get(
                         'source_addr_long', self.source_addr_long)
                 self.source_addr = packet.get(
                         'source_addr', self.source_addr)
-
-                #TODO: Implement RSSI
-                #self.rssi = packet['rssi']
-                #print self.rssi
 
                 payload += packet['rf_data']
 
@@ -97,10 +101,12 @@ class Receiver:
                 # Unpack Struct according to ID, and update global parameters
                 for data_type, data_shape in self.data_shape.iteritems():
                     if (packet_type == data_type):
-                        stored_data += data_shape.unpack(payload)
+                        stored_data += data_shape.unpack(payload[2:])
                     else:
                         stored_data += tuple([None] * len([i for i in data_shape.format if i != 'x']))
-                    
+
+                #Add RSSI to each packet
+                stored_data += tuple([self.rssi])
 
             # let our data be processed - unpacks an array of tuples into one single tuple
             yield stored_data
