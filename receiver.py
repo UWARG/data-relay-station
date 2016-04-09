@@ -44,7 +44,7 @@ class Receiver:
         self.data_size = self.data_shape[self.data_shape.keys()[0]].size
         for i in xrange(1,len(self.data_shape)):
             if (self.data_shape[i].size != self.data_size):
-                print("Data Packets are not the same in size: " + self.data_size + " " + self.data_shape[i].size)
+                print("Data Packets are not the same in size: " + str(self.data_size) + " " + str(self.data_shape[i].size))
         
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
@@ -52,6 +52,7 @@ class Receiver:
         self.packet_type = None
         self.outbound = []
         self.rssi = -100
+        self.stored_data = [tuple([None])]*len(self.data_shape.keys())
 
     def async_tx(self, command):
         """Eventually send a command
@@ -71,6 +72,7 @@ class Receiver:
     def data_lines(self):
         while True:
             payload = ''
+            yield_data = ()
             for x in xrange(self.expected_packets):
 
                 packet = self.xbee.wait_read_frame()
@@ -93,23 +95,21 @@ class Receiver:
                 payload += packet['rf_data']
 
                 # Read first two bytes, to determine packet type
-                packet_type = struct.unpack("h",payload[:2])[0]
-
-                #Preallocate space
-                stored_data = ()
-
+                packet_type = struct.unpack("h", payload[:2])[0]
+            
                 # Unpack Struct according to ID, and update global parameters
                 for data_type, data_shape in self.data_shape.iteritems():
                     if (packet_type == data_type):
-                        stored_data += data_shape.unpack(payload[2:])
-                    else:
-                        stored_data += tuple([None] * len([i for i in data_shape.format if i != 'x']))
-
+                        self.stored_data[data_type] = data_shape.unpack(payload[2:])
+                    #else:
+                        #self.stored_data[data_type] += tuple([None] * len([i for i in data_shape.format if i != 'x']))
+                yield_data = tuple([i for j in self.stored_data for i in j])
+                
                 #Add RSSI to each packet
-                stored_data += tuple([self.rssi])
+                yield_data += tuple([self.rssi])
 
             # let our data be processed - unpacks an array of tuples into one single tuple
-            yield stored_data
+            yield yield_data
 
             # flush the command queue to the xbee
             for cmd in self.outbound:
