@@ -62,6 +62,7 @@ command_types = {
     'set_flapKIGain':           {'cmd':55,  'type':'f'},
     'drop_probe':    	        {'cmd':56,  'type':'B'},
     'reset_probe':		{'cmd':57,  'type':'B'},
+    'follow_path':              {'cmd':58,  'type':'B'},
 }
 
 multipart_command_types = {
@@ -73,6 +74,7 @@ multipart_command_types = {
     'set_KDValues':              {'cmd':133,  'type':'fffffff'},
     'set_KPValues':              {'cmd':134,  'type':'fffffff'},
     'set_KIValues':              {'cmd':135,  'type':'fffffff'},
+    'update_waypoint':          {'cmd':136, 'type':'ddff'},
 }
 
 class CommandParser:
