@@ -66,9 +66,9 @@ command_types = {
 }
 
 multipart_command_types = {
-    'new_Waypoint':             {'cmd':128, 'type':'ddff'},
-    'insert_Waypoint':          {'cmd':129, 'type':'ddffBB'},
-    'set_ReturnHomeCoordinates':{'cmd':130, 'type':'ddf'},
+    'new_waypoint':             {'cmd':128, 'type':'ddff'},
+    'insert_waypoint':          {'cmd':129, 'type':'ddffBB'},
+    'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf'},
     'tare_IMU':                 {'cmd':131,  'type':'fff'},
     'set_IMU':                  {'cmd':132,  'type':'fff'},
     'set_KDValues':              {'cmd':133,  'type':'fffffff'},
