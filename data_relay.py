@@ -47,6 +47,9 @@ db_type ={
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
+	('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
+ 
         ),
         MED_FREQ: ( #82 bytes
         ('f', 'roll_kd'),
@@ -55,6 +58,7 @@ db_type ={
         ('f', 'pitch_kp'),
         ('f', 'yaw_kd'),
         ('f', 'yaw_kp'),
+        ('f', 'path_checksum'),
         ('h', 'last_command_sent0'),
         ('h', 'last_command_sent1'),
         ('h', 'last_command_sent2'),
@@ -85,12 +89,10 @@ db_type ={
         ('B', 'wireless_connection'),
         ('B', 'autopilot_active'),
         ('B', 'gps_status'),
-        ('B', 'path_checksum'),
         ('B', 'waypoint_count'),
         ('B', 'waypoint_index'),
         ('B', 'path_following'),
-        ('x', 'one byte of padding'),
-        ),
+	),
         LOW_FREQ:( #74 bytes + 12 padding bytes
         ('f', 'roll_ki'),
         ('f', 'pitch_ki'),
@@ -124,7 +126,9 @@ db_type ={
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
-        )
+      	('x', 'one byte of padding'),
+        ('x', 'one byte of padding'), 
+	)
         }
 
 class DatalinkSimulator:
