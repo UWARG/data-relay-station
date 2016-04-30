@@ -70,13 +70,22 @@ class Receiver:
         return self
 
     def data_lines(self):
+
+        #counter to limit extra packets sent
+        packetCnt=0
         while True:
             payload = ''
             yield_data = ()
             for x in xrange(self.expected_packets):
 
                 packet = self.xbee.wait_read_frame()
-                self.xbee.at(command="DB")
+
+                #limit packets by only sending decibel strength only when if statement is true
+                if(packetCnt>=10):
+                    self.xbee.at(command="DB")
+                    packetCnt=0
+                packetCnt=packetCnt+1
+
                 while packet.get('id', None) != 'rx':
                     #Checks for tx_response
                     if packet.get('id', None) == 'tx_status':

@@ -126,6 +126,7 @@ db_type ={
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
         ('x', 'one byte of padding'),
+        ('x', 'one byte of padding'),
       	('x', 'one byte of padding'),
         ('x', 'one byte of padding'), 
 	)

@@ -26,7 +26,9 @@ command_types = {
     'set_pathGain':             {'cmd':19,  'type':'f'},
     'set_orbitGain':            {'cmd':20,  'type':'f'},
     'set_showGain':             {'cmd':21,  'type':'B'},
-    'set_pitchRate':            {'cmd':22,  'type':'h'}, 'set_rollRate':             {'cmd':23,  'type':'h'}, 'set_yawRate':              {'cmd':24,  'type':'h'},
+    'set_pitchRate':            {'cmd':22,  'type':'h'}, 
+    'set_rollRate':             {'cmd':23,  'type':'h'}, 
+    'set_yawRate':              {'cmd':24,  'type':'h'},
     'set_pitchAngle':           {'cmd':25,  'type':'h'},
     'set_rollAngle':            {'cmd':26,  'type':'h'},
     'set_yawAngle':             {'cmd':27,  'type':'h'},
@@ -59,7 +61,7 @@ command_types = {
     'set_flapKPGain':           {'cmd':54,  'type':'f'},
     'set_flapKIGain':           {'cmd':55,  'type':'f'},
     'drop_probe':    	        {'cmd':56,  'type':'B'},
-    'reset_probe':		{'cmd':57,  'type':'B'},
+    'reset_probe':		        {'cmd':57,  'type':'B'},
     'follow_path':              {'cmd':58,  'type':'B'},
 }
 
