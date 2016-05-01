@@ -85,33 +85,38 @@ class CommandParser:
     def parse_command(self, cmd_str):
         if ':' not in cmd_str:
             return False, None
-        cmd_type, values = cmd_str.split(':', 1)
-        compiled_cmd = b''
-        if cmd_type in multipart_command_types:
-            part_list = values.split(',')
-            realval_list = [eval(i) for i in part_list]
 
-            compiled_cmd = bytearray(
-                    [multipart_command_types.get(cmd_type).get('cmd')])
+        try:
+            cmd_type, values = cmd_str.split(':', 1)
+            compiled_cmd = b''
+            if cmd_type in multipart_command_types:
+                part_list = values.split(',')
+                realval_list = [eval(i) for i in part_list]
 
-            compiled_cmd += struct.pack(
-                    multipart_command_types.get(cmd_type).get('type'),
-                    *realval_list)
+                compiled_cmd = bytearray(
+                        [multipart_command_types.get(cmd_type).get('cmd')])
 
-            print("multipart command bytes")
-            print(",".join("{}".format(hex(c)) for c in compiled_cmd))
-            return True, compiled_cmd
+                compiled_cmd += struct.pack(
+                        multipart_command_types.get(cmd_type).get('type'),
+                        *realval_list)
 
-        elif cmd_type in command_types:
-            compiled_cmd = bytearray(
-                    [command_types.get(cmd_type).get('cmd')])
-            if cmd_type == 'debug':                 #printing special case
-                compiled_cmd += bytearray(values)
-            else:
-                realval = eval(values) # THIS IS REALLY BAD, DON'T DO THIS
-                print realval
-                compiled_cmd += struct.pack(command_types.get(cmd_type).get('type'), realval)
-                print ":".join("{}".format(hex(c)) for c in compiled_cmd)
+                print("multipart command bytes")
+                print(",".join("{}".format(hex(c)) for c in compiled_cmd))
+                return True, compiled_cmd
 
-            return True, compiled_cmd
+            elif cmd_type in command_types:
+                compiled_cmd = bytearray(
+                        [command_types.get(cmd_type).get('cmd')])
+                if cmd_type == 'debug':                 #printing special case
+                    compiled_cmd += bytearray(values)
+                else:
+                    realval = eval(values) # THIS IS REALLY BAD, DON'T DO THIS
+                    print realval
+                    compiled_cmd += struct.pack(command_types.get(cmd_type).get('type'), realval)
+                    print ":".join("{}".format(hex(c)) for c in compiled_cmd)
+
+                return True, compiled_cmd
+        except Exception as e:
+            print("Failed to parse command \"{}\" because of error: {}".format(cmd_str, e))
+
         return False, None
