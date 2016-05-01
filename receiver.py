@@ -40,6 +40,10 @@ class Receiver:
         self.data_shape = {key:struct.Struct(
             ''.join(map(lambda x: x[0], packet))) for key, packet in db_type.iteritems()}
 
+        #Print out packet size
+        for key, packet in self.data_shape.iteritems():
+            print("Packet Size {}: {}".format(key,packet.size))
+        
         #Check if all packets have the same size
         self.data_size = self.data_shape[self.data_shape.keys()[0]].size
         for i in xrange(1,len(self.data_shape)):
