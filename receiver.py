@@ -49,9 +49,13 @@ class Receiver:
         
         #Check if all packets have the same size
         self.data_size = self.data_shape[self.data_shape.keys()[0]].size
+        data_mismatch = False
         for i in xrange(1,len(self.data_shape)):
             if (self.data_shape[i].size != self.data_size):
                 print("Data Packets are not the same in size: " + str(self.data_size) + " " + str(self.data_shape[i].size))
+                data_mismatch = True
+        if data_mismatch:
+            raise ValueError("Data packet size mismatch")
         
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
