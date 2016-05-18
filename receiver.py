@@ -4,6 +4,7 @@ import serial
 import struct
 from xbee.zigbee import ZigBee
 from sys import platform as _platform
+import time
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
@@ -63,15 +64,59 @@ class Receiver:
         """
         self.outbound.append(command)
 
-    def __enter__(self):
-        #Change this to search for USB, Unhardcode the ports
-        if _platform == "linux" or _platform == "linux2":
-            self.ser = serial.Serial('/dev/ttyUSB0', 115200)
-        elif _platform == "win32":
-            self.ser = serial.Serial('COM5', 115200)
-        self.xbee = ZigBee(self.ser)
+
+
+    def connect_to_xbee(self):
+
+        #detect platform and format port names
+        if _platform.startswith('win'):
+            ports = ['COM%s' % (i + 1) for i in range(256)]
+        elif _platform.startswith('linux'):
+            # this excludes your current terminal "/dev/tty"
+            ports = glob.glob('/dev/tty[A-Za-z]*')
+        else:
+            raise EnvironmentError('Unsupported platform: ' + _platform)
+
+
+
+        #search for available ports
+        self.port_to_connect = ''
+        self.timeout_start_time = time.time()
+        while self.port_to_connect == '': 
+            self.ports_avail = []
+            if (time.time() - self.timeout_start_time)>100:
+                raise EnvironmentError('Timed out searching for serial connection.')
+            
+            #loop through all possible ports and try to connect
+            for port in ports:
+                try:
+                    s = serial.Serial(port)
+                    s.close()
+                    self.ports_avail.append(port)
+                except (OSError, serial.SerialException):
+                    pass
+            #Check the right number of Serial ports are connected        
+            if len(self.ports_avail) ==1:
+                self.port_to_connect = self.ports_avail[0]
+                
+            elif len(self.ports_avail)==0:
+                #No Serial port found, continue looping.
+                print "No serial port detected. Trying again..."
+                time.sleep(1)
+
+            elif len(self.ports_avail)>1:
+                #Multiple serial ports detected. Get user input to decide which one to connect to
+                com_input = raw_input("Multiple serial ports available. Which serial port do you want? \n"+str(self.ports_avail)).upper();
+                if com_input in self.ports_avail:
+                    self.port_to_connect = com_input
+
+        #connect to xbee
+        self.xbee = ZigBee(serial.Serial(self.port_to_connect, 115200))
         print 'xbee created/initialized'
         return self
+
+
+
 
     def data_lines(self):
 
@@ -132,6 +177,9 @@ class Receiver:
                 print "sent a command"
             self.outbound = []
 
+
+    def __enter__(self):
+        self.connect_to_xbee()
 
     def __exit__(self, type, value, traceback):
         self.xbee = None
