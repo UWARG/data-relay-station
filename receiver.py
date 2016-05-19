@@ -81,11 +81,8 @@ class Receiver:
 
         #search for available ports
         self.port_to_connect = ''
-        self.timeout_start_time = time.time()
         while self.port_to_connect == '': 
             self.ports_avail = []
-            if (time.time() - self.timeout_start_time)>100:
-                raise EnvironmentError('Timed out searching for serial connection.')
             
             #loop through all possible ports and try to connect
             for port in ports:
@@ -95,18 +92,18 @@ class Receiver:
                     self.ports_avail.append(port)
                 except (OSError, serial.SerialException):
                     pass
-            #Check the right number of Serial ports are connected        
+            
             if len(self.ports_avail) ==1:
                 self.port_to_connect = self.ports_avail[0]
                 
             elif len(self.ports_avail)==0:
                 #No Serial port found, continue looping.
                 print "No serial port detected. Trying again..."
-                time.sleep(1)
+                time.sleep(2)
 
             elif len(self.ports_avail)>1:
                 #Multiple serial ports detected. Get user input to decide which one to connect to
-                com_input = raw_input("Multiple serial ports available. Which serial port do you want? \n"+str(self.ports_avail)).upper();
+                com_input = raw_input("Multiple serial ports available. Which serial port do you want? \n"+str(self.ports_avail)).upper()+":";
                 if com_input in self.ports_avail:
                     self.port_to_connect = com_input
 
