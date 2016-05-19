@@ -23,17 +23,23 @@ class WriteToFileMiddleware:
 
     def data_lines(self):
         # write header line out to file
-        print('writing headers')
-        with open(self.filename, 'w') as outfile:
-            outfile.write("{}\r\n".format(self.header))
 
-        for line in self.gen.data_lines():
-            # write element to file
-            with open(self.filename, 'a') as outfile:
-                outfile.write(str(line).replace('(','').replace(')','').replace('None','') + '\n')
-            # re-yield element
-            yield line
 
+        try:
+            print('writing headers')
+            with open(self.filename, 'w') as outfile:
+                outfile.write("{}\r\n".format(self.header))
+
+            for line in self.gen.data_lines():
+                # write element to file
+                with open(self.filename, 'a') as outfile:
+                    outfile.write(str(line).replace('(','').replace(')','').replace('None','') + '\n')
+                # re-yield element
+                yield line
+        except (OSError, serial.SerialException):
+            #catch exception if xbee is unplugged, and try to reconnect
+            print "Xbee disconnected!"
+            self.gen.reconnect_xbee()
 
 class Receiver:
 
@@ -65,8 +71,7 @@ class Receiver:
         self.outbound.append(command)
 
 
-
-    def connect_to_xbee(self):
+    def reconnect_xbee(self):
 
         #detect platform and format port names
         if _platform.startswith('win'):
@@ -80,39 +85,41 @@ class Receiver:
 
 
         #search for available ports
-        self.port_to_connect = ''
-        while self.port_to_connect == '': 
-            self.ports_avail = []
+        port_to_connect = ''
+        while port_to_connect == '': 
+            ports_avail = []
             
             #loop through all possible ports and try to connect
             for port in ports:
                 try:
                     s = serial.Serial(port)
                     s.close()
-                    self.ports_avail.append(port)
+                    ports_avail.append(port)
                 except (OSError, serial.SerialException):
                     pass
             
-            if len(self.ports_avail) ==1:
-                self.port_to_connect = self.ports_avail[0]
+            if len(ports_avail) ==1:
+                port_to_connect = ports_avail[0]
                 
-            elif len(self.ports_avail)==0:
+            elif len(ports_avail)==0:
                 #No Serial port found, continue looping.
                 print "No serial port detected. Trying again..."
-                time.sleep(2)
+                time.sleep(1)
 
-            elif len(self.ports_avail)>1:
+            elif len(ports_avail)>1:
                 #Multiple serial ports detected. Get user input to decide which one to connect to
                 com_input = raw_input("Multiple serial ports available. Which serial port do you want? \n"+str(self.ports_avail)).upper()+":";
                 if com_input in self.ports_avail:
-                    self.port_to_connect = com_input
+                    port_to_connect = com_input
 
         #connect to xbee
-        self.xbee = ZigBee(serial.Serial(self.port_to_connect, 115200))
-        print 'xbee created/initialized'
+        self.xbee = ZigBee(serial.Serial(port_to_connect, 115200))
+        print 'xbee connected!'
         return self
 
 
+    def __enter__(self):
+        return self.reconnect_xbee()
 
 
     def data_lines(self):
@@ -174,9 +181,6 @@ class Receiver:
                 print "sent a command"
             self.outbound = []
 
-
-    def __enter__(self):
-        self.connect_to_xbee()
 
     def __exit__(self, type, value, traceback):
         self.xbee = None
