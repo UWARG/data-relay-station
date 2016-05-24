@@ -161,7 +161,7 @@ class DatalinkSimulator:
         print('end of traceback')
         pass
 
-def main(sim_file=None, sim_speed=0.2):
+def main(sim_file=None, sim_speed=0.2, serial_port=None):
 
     filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
     print ("writing to file called '{}'".format(filename))
@@ -178,7 +178,7 @@ def main(sim_file=None, sim_speed=0.2):
             with open(sim_file) as simfile:
                 header = simfile.readline()
         else:
-            intermediate = Receiver(db_type)
+            intermediate = Receiver(db_type, serial_port)
 
         with intermediate as datalines:
             factory = TelemetryFactory(datalines, header)
@@ -202,5 +202,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
     parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame")
+    parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
     args = parser.parse_args()
-    main(sim_file=args.simfile, sim_speed=args.simspeed)
+    main(sim_file=args.simfile, sim_speed=args.simspeed, serial_port=args.serialport)
