@@ -69,19 +69,20 @@ class Receiver:
 
 
     def reconnect_xbee(self):
-
-        #detect platform and format port names
-        if _platform.startswith('win'):
-            ports = ['COM%s' % (i + 1) for i in range(256)]
-        elif _platform.startswith('linux'):
-            # this excludes your current terminal "/dev/tty"
-            ports = glob.glob('/dev/ttyUSB*')
-        else:
-            raise EnvironmentError('Unsupported platform: ' + _platform)
-
+        
         #search for available ports
         port_to_connect = ''
         while port_to_connect == '': 
+            #detect platform and format port names
+            if _platform.startswith('win'):
+                ports = ['COM%s' % (i + 1) for i in range(256)]
+            elif _platform.startswith('linux'):
+                # this excludes your current terminal "/dev/tty"
+                ports = glob.glob('/dev/ttyUSB*')
+            else:
+                raise EnvironmentError('Unsupported platform: ' + _platform)
+
+        
             ports_avail = []
             
             #loop through all possible ports and try to connect
@@ -92,7 +93,7 @@ class Receiver:
                     ports_avail.append(port)
                 except (OSError, serial.SerialException):
                     pass
-            
+
             if len(ports_avail) ==1:
                 port_to_connect = ports_avail[0]
                 
@@ -163,8 +164,8 @@ class Receiver:
                     for data_type, data_shape in self.data_shape.iteritems():
                         if (packet_type == data_type):
                             self.stored_data[data_type] = data_shape.unpack(payload[2:])
-                        #else:
-                            #self.stored_data[data_type] += tuple([None] * len([i for i in data_shape.format if i != 'x']))
+                        else:
+                            self.stored_data[data_type] = tuple([None] * len([i for i in data_shape.format if i != 'x']))
                     yield_data = tuple([i for j in self.stored_data for i in j])
                     
                     #Add RSSI to each packet
@@ -180,15 +181,15 @@ class Receiver:
                     print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
                     print("sent a command")
                 self.outbound = []
-            except (OSError, serial.SerialException):
+            except Exception as e:
                 #catch exception if xbee is unplugged, and try to reconnect
-                print("Xbee disconnected!")
+                print("Xbee disconnected! " + str(e))
+                self.xbee = None
                 self.reconnect_xbee()
 
 
     def __exit__(self, type, value, traceback):
         self.xbee = None
-        self.ser.close()
         if isinstance(value, serial.SerialException):
             print(traceback)
             return True
