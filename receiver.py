@@ -69,19 +69,19 @@ class Receiver:
 
 
     def reconnect_xbee(self):
-    #search for available ports
+
+        #detect platform and format port names
+        if _platform.startswith('win'):
+            ports = ['COM%s' % (i + 1) for i in range(256)]
+        elif _platform.startswith('linux'):
+            # this excludes your current terminal "/dev/tty"
+            ports = glob.glob('/dev/ttyUSB*')
+        else:
+            raise EnvironmentError('Unsupported platform: ' + _platform)
+
+        #search for available ports
         port_to_connect = ''
         while port_to_connect == '': 
-
-            #detect platform and format port names
-            if _platform.startswith('win'):
-                ports = ['COM%s' % (i + 1) for i in range(256)]
-            elif _platform.startswith('linux'):
-                # this excludes your current terminal "/dev/tty"
-                ports = glob.glob('/dev/ttyUSB*')
-            else:
-                raise EnvironmentError('Unsupported platform: ' + _platform)
-        
             ports_avail = []
             
             #loop through all possible ports and try to connect
@@ -180,7 +180,7 @@ class Receiver:
                     print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
                     print("sent a command")
                 self.outbound = []
-            except (OSError, serial.SerialException, IOError):
+            except (OSError, serial.SerialException):
                 #catch exception if xbee is unplugged, and try to reconnect
                 print("Xbee disconnected!")
                 self.reconnect_xbee()
