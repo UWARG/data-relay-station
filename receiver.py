@@ -163,8 +163,8 @@ class Receiver:
                     for data_type, data_shape in self.data_shape.iteritems():
                         if (packet_type == data_type):
                             self.stored_data[data_type] = data_shape.unpack(payload[2:])
-                        #else:
-                            #self.stored_data[data_type] += tuple([None] * len([i for i in data_shape.format if i != 'x']))
+                        else:
+                            self.stored_data[data_type] = tuple([None] * len([i for i in data_shape.format if i != 'x']))
                     yield_data = tuple([i for j in self.stored_data for i in j])
                     
                     #Add RSSI to each packet
