@@ -75,6 +75,7 @@ multipart_command_types = {
     'set_KPValues':              {'cmd':134,  'type':'fffffff'},
     'set_KIValues':              {'cmd':135,  'type':'fffffff'},
     'update_waypoint':          {'cmd':136, 'type':'ddffBB'},
+    'set_gains':                {'cmd':137, 'type':'hfff'} #first int represents the channel #, 3 floats are KD, KP, KI
 }
 
 class CommandParser:
