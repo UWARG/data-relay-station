@@ -191,7 +191,7 @@ class Receiver:
         try:
             self.ser.close()
         except(AttributeError):
-            #If the program exits before ser is initiallized, ser.close() will throw an AttributeError
+            #If the program exits before ser is initiallized, ser.close() will throw an AttributeError, which is caught and ignored
             pass
         if isinstance(value, serial.SerialException):
             print(traceback)
