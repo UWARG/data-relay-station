@@ -136,6 +136,7 @@ class DatalinkSimulator:
     def __init__(self, filename, speed):
         print('initing {}'.format(self.__class__))
         self._filename = filename
+        self._speed = speed
 
     def data_lines(self):
         with open(self._filename, 'r') as infile:
@@ -144,7 +145,7 @@ class DatalinkSimulator:
             for line in infile:
                 #print 'yielding line'
                 yield line
-                time.sleep(speed)
+                time.sleep(self._speed)
 
     def async_tx(self, command):
         """Fake sending a command, since we obviously don't have anywhere
@@ -170,7 +171,6 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None):
     #Add additional fields here:
     list_header.append('RSSI')
     header = ','.join(list_header)
-
 
     try:
         if sim_file:
@@ -204,4 +204,9 @@ if __name__ == "__main__":
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame")
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
     args = parser.parse_args()
-    main(sim_file=args.simfile, sim_speed=args.simspeed, serial_port=args.serialport)
+    
+    #Default Sim Speed
+    simspeed = 0.2
+    if (args.simspeed):
+        simspeed = float(args.simspeed)
+    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport)
