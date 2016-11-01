@@ -60,6 +60,10 @@ To run the base station without an XBee (useful for testing).
 ```
 python2.7 data_relay.py --simfile FILENAME.csv
 ```
+
+A successful data-relay-station connection may look as such:
+![data-relay-station connection](http://imgur.com/hdNWMdi.png)
+
 ## Sample Flight Data
 
 Data collected from all flights is stored [here](https://drive.google.com/folderview?id=0BySpWXvmBM4JRm9seXBSNDVHNmM&usp=sharing). The data collected is stored in folders that are in alphabetical-sequential order, and all files are time stamped.
