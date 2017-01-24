@@ -7,6 +7,8 @@ from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 
+import os,errno
+
 DEFAULT_MAX_HISTORY_SIZE = 200
 
 class EchoLogger:
@@ -31,7 +33,7 @@ class MultiEcho(LineReceiver):
         for history_line in self.factory.history:
             self.transport.write(history_line)
         self.factory.echoers.append(self)
-        self.logger = EchoLogger(open(self.factory.filename, "a"))
+        self.logger = EchoLogger(open('logs/'+self.factory.filename, "a"))
 
     def lineReceived(self, data):
         self.factory.history.append(data)
