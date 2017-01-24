@@ -192,7 +192,11 @@ class Receiver:
 
     def __exit__(self, type, value, traceback):
         self.xbee = None
-        self.ser.close()
+        try:
+            self.ser.close()
+        except(AttributeError):
+            #If the program exits before ser is initiallized, ser.close() will throw an AttributeError, which is caught and ignored
+            pass
         if isinstance(value, serial.SerialException):
             print(traceback)
             return True
