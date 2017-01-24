@@ -33,7 +33,7 @@ class MultiEcho(LineReceiver):
         for history_line in self.factory.history:
             self.transport.write(history_line)
         self.factory.echoers.append(self)
-        self.logger = EchoLogger(open('logs/'+self.factory.filename, "a"))
+        self.logger = EchoLogger(open(self.factory.filename, "a"))
 
     def lineReceived(self, data):
         self.factory.history.append(data)
@@ -52,7 +52,7 @@ class MultiEchoFactory(Factory):
         self.echoers = []
         self.history = deque(maxlen = history_size)
         if logfile_name is None:
-            self.filename = "echo_data_{}.log".format(datetime.datetime.now()).replace(':', '_')
+            self.filename = "logs/echo_data_{}.log".format(datetime.datetime.now()).replace(':', '_')
         print("writing to a file called '{}'".format(self.filename))
 
     def buildProtocol(self, addr):
