@@ -7,6 +7,8 @@ from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 
+import os,errno
+
 DEFAULT_MAX_HISTORY_SIZE = 200
 
 class EchoLogger:
@@ -50,7 +52,7 @@ class MultiEchoFactory(Factory):
         self.echoers = []
         self.history = deque(maxlen = history_size)
         if logfile_name is None:
-            self.filename = "echo_data_{}.log".format(datetime.datetime.now()).replace(':', '_')
+            self.filename = "logs/echo_data_{}.log".format(datetime.datetime.now()).replace(':', '_')
         print("writing to a file called '{}'".format(self.filename))
 
     def buildProtocol(self, addr):
