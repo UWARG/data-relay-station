@@ -195,7 +195,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
     try:
         if sim_file:
             intermediate = DatalinkSimulator(sim_file, sim_speed)
-            with open(sim_file) as simfile:
+            with open('logs/' + sim_file) as simfile:
                 header = simfile.readline()
         else:
             intermediate = Receiver(db_type, serial_port)
@@ -207,7 +207,6 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
                     WriteToFileMiddleware(datalines, filename, header))
             factory.setSource(one2many)
 
-            print('listening on a port')
             host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
             print('listening on port {}'.format(host.port))
 
@@ -229,7 +228,7 @@ if __name__ == "__main__":
     parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs file.")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
-    parser.add_argument("--legacy_port", "-l", action='store_true')
+    parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
     args = parser.parse_args()
     
     #Default Sim Speed
