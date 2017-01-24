@@ -155,7 +155,7 @@ class DatalinkSimulator:
 
     def __init__(self, filename, speed):
         print('initing {}'.format(self.__class__))
-        self._filename = filename
+        self._filename = 'logs/' + filename
         self._speed = speed
 
     def data_lines(self):
@@ -184,7 +184,7 @@ class DatalinkSimulator:
 
 def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 
-    filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
+    filename = "flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
     print ("writing to file called '{}'".format(filename))
     
     list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
@@ -226,7 +226,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
-    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay")
+    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs file.")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
     parser.add_argument("--legacy_port", "-l", action='store_true')
