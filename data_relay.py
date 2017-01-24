@@ -225,7 +225,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
-    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs file.")
+    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs folder.")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
     parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
