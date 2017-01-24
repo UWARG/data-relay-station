@@ -155,7 +155,7 @@ class DatalinkSimulator:
 
     def __init__(self, filename, speed):
         print('initing {}'.format(self.__class__))
-        self._filename = 'logs/' + filename
+        self._filename = filename
         self._speed = speed
 
     def data_lines(self):
@@ -184,7 +184,7 @@ class DatalinkSimulator:
 
 def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 
-    filename = "flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
+    filename = "logs/flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
     print ("writing to file called '{}'".format(filename))
     
     list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
@@ -194,7 +194,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 
     try:
         if sim_file:
-            intermediate = DatalinkSimulator(sim_file, sim_speed)
+            intermediate = DatalinkSimulator('logs/' + sim_file, sim_speed)
             with open('logs/' + sim_file) as simfile:
                 header = simfile.readline()
         else:

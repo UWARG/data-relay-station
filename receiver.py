@@ -19,7 +19,7 @@ class WriteToFileMiddleware:
     def __init__(self, gen, filename, header):
         print('initing {}'.format(self.__class__))
         self.gen = gen
-        self.filename = 'logs/'+filename
+        self.filename = filename
         self.header = header
 
         #Create folder if not already there
