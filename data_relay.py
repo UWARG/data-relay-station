@@ -210,8 +210,9 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
             if logging:
                 telem = TelemetryProducer(one2many,
                         WriteToFileMiddleware(datalines, filename, header))
-                threads.deferToThread(telem.resumeProducing)
-
+            else:
+                telem = TelemetryProducer(one2many,datalines)
+                
             host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
             print('listening on port {}'.format(host.port))
 
@@ -220,6 +221,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
             else:
                 reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
 
+            threads.deferToThread(telem.resumeProducing)
             reactor.run()
     except KeyboardInterrupt:
         print("Capture interrupted by user")
@@ -243,9 +245,10 @@ if __name__ == "__main__":
 
     #default log setting: log unless in simulator mode
     logging = not (args.simfile)
-    if(args.nolog):
-        logging=False
-    elif(args.log):
+    if(args.log):
         logging=True
+    elif(args.nolog):
+        logging=False
+    
 
     main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging)
