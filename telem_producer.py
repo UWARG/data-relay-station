@@ -9,7 +9,6 @@ class TelemetryProducer:
 
     def __init__(self, consumer, gen):
         print('initing {}'.format(self.__class__))
-        print(consumer)
         self._consumer = consumer
         self._gen = gen
         self._paused = False

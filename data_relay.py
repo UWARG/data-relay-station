@@ -182,11 +182,13 @@ class DatalinkSimulator:
         print('end of traceback')
         pass
 
-def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
+def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True):
+    if logging:
+        filename = "logs/flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
+        print ("writing to file called '{}'".format(filename))
+    else:
+        print ("Logging is disabled. Use --log to overwrite default.")
 
-    filename = "flight_data {}.csv".format(datetime.datetime.now()).replace(':','_')
-    print ("writing to file called '{}'".format(filename))
-    
     list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
     #Add additional fields here:
     list_header.append('RSSI')
@@ -194,8 +196,8 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
 
     try:
         if sim_file:
-            intermediate = DatalinkSimulator(sim_file, sim_speed)
-            with open(sim_file) as simfile:
+            intermediate = DatalinkSimulator('logs/' + sim_file, sim_speed)
+            with open('logs/' + sim_file) as simfile:
                 header = simfile.readline()
         else:
             intermediate = Receiver(db_type, serial_port)
@@ -203,11 +205,14 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
         with intermediate as datalines:
             factory = TelemetryFactory(datalines, header)
             one2many = ProducerToManyClient()
-            telem = TelemetryProducer(one2many,
-                    WriteToFileMiddleware(datalines, filename, header))
             factory.setSource(one2many)
 
-            print('listening on a port')
+            if logging:
+                telem = TelemetryProducer(one2many,
+                        WriteToFileMiddleware(datalines, filename, header))
+            else:
+                telem = TelemetryProducer(one2many,datalines)
+                
             host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
             print('listening on port {}'.format(host.port))
 
@@ -222,18 +227,28 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False):
         print("Capture interrupted by user")
 
 
-
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
-    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay")
+    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs folder.")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
-    parser.add_argument("--legacy_port", "-l", action='store_true')
+    parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
+    parser.add_argument("--log", action='store_true', help="Always write log file (even in simulator mode).")
+    parser.add_argument("--nolog", action='store_true', help="Never write log file.")
     args = parser.parse_args()
     
     #Default Sim Speed
     simspeed = 0.2
     if (args.simspeed):
         simspeed = float(args.simspeed)
-    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port)
+
+    #default log setting: log unless in simulator mode
+    logging = not (args.simfile)
+    if(args.log):
+        logging=True
+    elif(args.nolog):
+        logging=False
+    
+
+    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging)

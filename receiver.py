@@ -6,6 +6,7 @@ from xbee.zigbee import ZigBee
 from sys import platform as _platform
 import time
 import glob
+import os,errno
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
@@ -20,6 +21,14 @@ class WriteToFileMiddleware:
         self.gen = gen
         self.filename = filename
         self.header = header
+
+        #Create folder if not already there
+        if not os.path.exists(os.path.dirname(self.filename)):
+            try:
+                os.makedirs(os.path.dirname(self.filename))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
         #self.transport = gen.transport
 
     def data_lines(self):
