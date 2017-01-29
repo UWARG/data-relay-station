@@ -15,7 +15,7 @@ LOW_FREQ = 2
 SERVICE_PORT = 1234
 
 db_type = {
-        HIGH_FREQ: ( #76 bytes
+        HIGH_FREQ: ( # 72 bytes + 16 padding bytes
             ('d', 'lat'),
             ('d', 'lon'),
             ('l', 'sys_time'),
@@ -52,7 +52,7 @@ db_type = {
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ),
-        MED_FREQ: ( #82 bytes
+        MED_FREQ: ( # 88 bytes
             ('f', 'roll_kd'),
             ('f', 'roll_kp'),
             ('f', 'pitch_kd'),
@@ -94,7 +94,7 @@ db_type = {
             ('B', 'waypoint_index'),
             ('B', 'path_following'),
             ),
-        LOW_FREQ: ( #74 bytes + 12 padding bytes
+        LOW_FREQ: ( # 75 bytes + 13 padding bytes
             ('f', 'roll_ki'),
             ('f', 'pitch_ki'),
             ('f', 'yaw_ki'),
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument("--log", action='store_true', help="Always write log file (even in simulator mode).")
     parser.add_argument("--nolog", action='store_true', help="Never write log file.")
     args = parser.parse_args()
-    
+
     #Default Sim Speed
     simspeed = 0.2
     if (args.simspeed):

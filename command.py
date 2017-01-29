@@ -26,8 +26,8 @@ command_types = {
     'set_pathGain':             {'cmd':19,  'type':'f'},
     'set_orbitGain':            {'cmd':20,  'type':'f'},
     'set_showGain':             {'cmd':21,  'type':'B'},
-    'set_pitchRate':            {'cmd':22,  'type':'h'}, 
-    'set_rollRate':             {'cmd':23,  'type':'h'}, 
+    'set_pitchRate':            {'cmd':22,  'type':'h'},
+    'set_rollRate':             {'cmd':23,  'type':'h'},
     'set_yawRate':              {'cmd':24,  'type':'h'},
     'set_pitchAngle':           {'cmd':25,  'type':'h'},
     'set_rollAngle':            {'cmd':26,  'type':'h'},
@@ -66,15 +66,15 @@ command_types = {
 }
 
 multipart_command_types = {
-    'new_waypoint':             {'cmd':128, 'type':'ddffB'},
-    'insert_waypoint':          {'cmd':129, 'type':'ddffBBB'},
-    'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf'},
-    'tare_IMU':                 {'cmd':131,  'type':'fff'},
-    'set_IMU':                  {'cmd':132,  'type':'fff'},
-    'set_KDValues':              {'cmd':133,  'type':'fffffff'},
-    'set_KPValues':              {'cmd':134,  'type':'fffffff'},
-    'set_KIValues':              {'cmd':135,  'type':'fffffff'},
-    'update_waypoint':          {'cmd':136, 'type':'ddffBB'},
+    'new_waypoint':             {'cmd':128, 'type':'ddffB'}, # lon, lat, alt, rad, type
+    'insert_waypoint':          {'cmd':129, 'type':'ddffxBB'}, # lon, lat, alt, rad, prev, next
+    'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf'}, # lon, lat, alt
+    'tare_IMU':                 {'cmd':131, 'type':'fff'},
+    'set_IMU':                  {'cmd':132, 'type':'fff'},
+    'set_KDValues':             {'cmd':133, 'type':'fffffff'},
+    'set_KPValues':             {'cmd':134, 'type':'fffffff'},
+    'set_KIValues':             {'cmd':135, 'type':'fffffff'},
+    'update_waypoint':          {'cmd':136, 'type':'ddffBxxB'}, # lon, lat, alt, rad, type, id
     'set_gains':                {'cmd':137, 'type':'hfff'} #first int represents the channel #, 3 floats are KD, KP, KI
 }
 
