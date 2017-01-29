@@ -2,6 +2,12 @@
 
 import struct
 
+# For recerence:
+# x : null : 1 byte
+# B : char : 1 byte
+# h : int : 2 bytes
+# f : float : 4 bytes
+# d : long double : 8 bytes
 
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
@@ -65,10 +71,10 @@ command_types = {
     'follow_path':              {'cmd':58,  'type':'B'},
 }
 
-multipart_command_types = {
-    'new_waypoint':             {'cmd':128, 'type':'ddffB'}, # lon, lat, alt, rad, type
-    'insert_waypoint':          {'cmd':129, 'type':'ddffxBB'}, # lon, lat, alt, rad, prev, next
-    'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf'}, # lon, lat, alt
+multipart_command_types = { # append pad bytes so all waypoint commands are the same size
+    'new_waypoint':             {'cmd':128, 'type':'ddffB3x'}, # lon, lat, alt, rad, type
+    'insert_waypoint':          {'cmd':129, 'type':'ddffxBBx'}, # lon, lat, alt, rad, prev, next
+    'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf8x'}, # lon, lat, alt
     'tare_IMU':                 {'cmd':131, 'type':'fff'},
     'set_IMU':                  {'cmd':132, 'type':'fff'},
     'set_KDValues':             {'cmd':133, 'type':'fffffff'},
