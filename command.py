@@ -69,6 +69,7 @@ command_types = {
     'drop_probe':    	        {'cmd':56,  'type':'B'},
     'reset_probe':		        {'cmd':57,  'type':'B'},
     'follow_path':              {'cmd':58,  'type':'B'},
+    'show_scaled_pwm':          {'cmd':60,  'type':'B'},
 }
 
 multipart_command_types = { # append pad bytes so all waypoint commands are the same size
