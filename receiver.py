@@ -4,6 +4,7 @@ import serial
 import struct
 from xbee.zigbee import ZigBee
 from sys import platform as _platform
+from twisted.internet import reactor
 import time
 import glob
 import os,errno
@@ -44,7 +45,7 @@ class WriteToFileMiddleware:
                 outfile.write(str(line).replace('(','').replace(')','').replace('None','') + '\n')
             # re-yield element
             yield line
-        
+
 
 class Receiver:
 
@@ -55,7 +56,7 @@ class Receiver:
         #Print out packet size
         for key, packet in self.data_shape.iteritems():
             print("Packet Size {}: {}".format(key,packet.size))
-        
+
         #Check if all packets have the same size
         self.data_size = self.data_shape[self.data_shape.keys()[0]].size
         data_mismatch = False
@@ -65,7 +66,7 @@ class Receiver:
                 data_mismatch = True
         if data_mismatch:
             raise ValueError("Data packet size mismatch")
-        
+
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
         self.source_addr_long = None
@@ -73,7 +74,8 @@ class Receiver:
         self.outbound = []
         self.rssi = -100
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
-        self.default_serial = serialport
+
+        self.xbee = ZigBee(serial.Serial(serialport, 115200))
 
     def async_tx(self, command):
         """Eventually send a command
@@ -84,7 +86,7 @@ class Receiver:
     def reconnect_xbee(self):
     #search for available ports
         port_to_connect = ''
-        while port_to_connect == '': 
+        while port_to_connect == '':
 
             #detect platform and format port names
             if _platform.startswith('win'):
@@ -94,9 +96,9 @@ class Receiver:
                 ports = glob.glob('/dev/ttyUSB*')
             else:
                 raise EnvironmentError('Unsupported platform: ' + _platform)
-        
+
             ports_avail = []
-            
+
             #loop through all possible ports and try to connect
             for port in ports:
                 try:
@@ -105,10 +107,10 @@ class Receiver:
                     ports_avail.append(port)
                 except (OSError, serial.SerialException):
                     pass
-            
+
             if len(ports_avail) ==1:
                 port_to_connect = ports_avail[0]
-                
+
             elif len(ports_avail)==0:
                 #No Serial port found, continue looping.
                 print( "No serial port detected. Trying again...")
@@ -131,7 +133,7 @@ class Receiver:
 
 
     def __enter__(self):
-        return self.reconnect_xbee()
+        return self
 
 
     def data_lines(self):
@@ -161,7 +163,7 @@ class Receiver:
                             if packet.get('command', None) == 'DB':
                                 self.rssi = ord(packet.get('parameter',self.rssi))
                         packet = self.xbee.wait_read_frame()
-                        
+
                     self.source_addr_long = packet.get(
                             'source_addr_long', self.source_addr_long)
                     self.source_addr = packet.get(
@@ -171,7 +173,7 @@ class Receiver:
 
                     # Read first two bytes, to determine packet type
                     packet_type = struct.unpack("h", payload[:2])[0]
-                
+
                     # Unpack Struct according to ID, and update global parameters
                     for data_type, data_shape in self.data_shape.iteritems():
                         if (packet_type == data_type):
@@ -179,7 +181,7 @@ class Receiver:
                         else:
                             self.stored_data[data_type] = tuple([None] * len([i for i in data_shape.format if i != 'x']))
                     yield_data = tuple([i for j in self.stored_data for i in j])
-                    
+
                     #Add RSSI to each packet
                     yield_data += tuple([self.rssi])
 
@@ -200,6 +202,7 @@ class Receiver:
 
 
     def __exit__(self, type, value, traceback):
+        print('exitting')
         self.xbee = None
         try:
             self.ser.close()

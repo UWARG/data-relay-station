@@ -1,7 +1,8 @@
 ### data_relay.py
 
-import datetime, time
+import datetime, time, util, network_manager
 
+from threading import Thread
 from twisted.internet import reactor, threads
 from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
@@ -151,11 +152,41 @@ def _get_service_host():
     print("{}".format(local_ip_address))
     return local_ip_address
 
-class DatalinkSimulator:
+class Vehicle:
+    def __init__(self,serialport):
+        self.serialport = serialport
+        self.filename = "logs/flight_data_{}_{}.csv".format(datetime.datetime.now(),self.serialport).replace(':','_').replace(' ','_')
+        self.header = self.get_headers()
+        datalines = Receiver(db_type, self.serialport)
+        self.port = self.init_telemetry(datalines)
+        network_manager.add_connection(self.serialport,self.port)
 
-    def __init__(self, filename, speed):
-        print('initing {}'.format(self.__class__))
-        self._filename = filename
+
+    def get_headers(self):
+        #generate headers
+        list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
+        #Add additional fields here:
+        list_header.append('RSSI')
+        return ','.join(list_header)
+
+    def init_telemetry(self, datalines):
+        factory = TelemetryFactory(datalines, self.header)
+        one2many = ProducerToManyClient()
+        factory.setSource(one2many)
+
+        telem = TelemetryProducer(one2many,WriteToFileMiddleware(datalines, self.filename, self.header))
+
+        host = reactor.listenTCP(0, factory).getHost()
+        print('listening on port {}'.format(host.port))
+
+        threads.deferToThread(telem.resumeProducing)
+        return host.port
+
+
+class Simulator(Vehicle):
+    def __init__(self,serialport,simfile,speed=0.2):
+        network_manager.add_connection(serialport,1234)
+        self._simfile = simfile
         self._speed = speed
 
     def data_lines(self):
@@ -181,6 +212,23 @@ class DatalinkSimulator:
         print(traceback)
         print('end of traceback')
         pass
+
+class DataRelay:
+    def __init__(self):
+        self.refresh_all()
+        print(network_manager.connections_to_string())
+        reactor.run()
+    def refresh(self):
+        ports = util.detect_xbee_ports()
+        #make a connection for each one
+        for port in ports:
+            if port not in self._vehicles:
+                self._vehicles[port] = (Vehicle(port))
+
+    def refresh_all(self):
+        self._vehicles = {}
+        self.refresh()
+
 
 def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True):
     #enable/disable logging
@@ -228,7 +276,6 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
     except KeyboardInterrupt:
         print("Capture interrupted by user")
 
-def
 
 if __name__ == "__main__":
     import argparse
