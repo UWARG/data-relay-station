@@ -183,12 +183,14 @@ class DatalinkSimulator:
         pass
 
 def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True):
+    #enable/disable logging
     if logging:
         filename = "logs/flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
         print ("writing to file called '{}'".format(filename))
     else:
         print ("Logging is disabled. Use --log to overwrite default.")
 
+    #generate headers
     list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
     #Add additional fields here:
     list_header.append('RSSI')
@@ -212,7 +214,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
                         WriteToFileMiddleware(datalines, filename, header))
             else:
                 telem = TelemetryProducer(one2many,datalines)
-                
+
             host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
             print('listening on port {}'.format(host.port))
 
@@ -226,6 +228,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
     except KeyboardInterrupt:
         print("Capture interrupted by user")
 
+def
 
 if __name__ == "__main__":
     import argparse
@@ -249,6 +252,6 @@ if __name__ == "__main__":
         logging=True
     elif(args.nolog):
         logging=False
-    
+
 
     main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging)
