@@ -4,7 +4,6 @@ import serial
 import struct
 from xbee.zigbee import ZigBee
 from sys import platform as _platform
-from twisted.internet import reactor
 import time
 import glob
 import os,errno
@@ -198,7 +197,7 @@ class Receiver:
             except (OSError, serial.SerialException, IOError):
                 #catch exception if xbee is unplugged, and try to reconnect
                 print("Xbee disconnected!")
-                self.reconnect_xbee()
+                #self.reconnect_xbee()
 
 
     def __exit__(self, type, value, traceback):
@@ -212,3 +211,32 @@ class Receiver:
         if isinstance(value, serial.SerialException):
             print(traceback)
             return True
+class ReceiverSimulator:
+    def __init__(self, filename, speed):
+        print('initing {}'.format(self.__class__))
+        self._filename = filename
+        self._speed = speed
+
+    def data_lines(self):
+        with open(self._filename, 'r') as infile:
+            # skip the header line
+            infile.next()
+            for line in infile:
+                #print 'yielding line'
+                yield line
+                time.sleep(self._speed)
+
+    def async_tx(self, command):
+        """Fake sending a command, since we obviously don't have anywhere
+        to send it.
+        """
+        print("Noob is trying to send a command to a simulated plane LOL")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        print('printing traceback')
+        print(traceback)
+        print('end of traceback')
+        pass

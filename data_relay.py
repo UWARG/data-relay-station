@@ -1,10 +1,8 @@
 ### data_relay.py
 
 import datetime, time, util, network_manager
-
-from threading import Thread
-from twisted.internet import reactor, threads
-from receiver import Receiver, WriteToFileMiddleware
+from twisted.internet import threads, reactor
+from receiver import Receiver, ReceiverSimulator, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 from service_locator import ServiceProviderLocator
@@ -132,35 +130,15 @@ db_type = {
             ('x', 'one byte of padding'),
             )
         }
-
-def _get_service_host():
-    import netifaces
-    local_ip_addresses = []
-    for interface in netifaces.interfaces():
-        # Filter out loopback and virtual interfaces
-        if interface == 'lo' or 'vir' in interface:
-            continue
-        iface = netifaces.ifaddresses(interface).get(netifaces.AF_INET)
-        if iface != None:
-            for link in iface:
-                local_ip_addresses.append(link['addr'])
-
-    local_ip_address = None
-    if len(local_ip_addresses) != 0:
-        local_ip_address = local_ip_addresses[0]
-
-    print("{}".format(local_ip_address))
-    return local_ip_address
-
 class Vehicle:
     def __init__(self,serialport):
         self.serialport = serialport
         self.filename = "logs/flight_data_{}_{}.csv".format(datetime.datetime.now(),self.serialport).replace(':','_').replace(' ','_')
         self.header = self.get_headers()
-        datalines = Receiver(db_type, self.serialport)
-        self.port = self.init_telemetry(datalines)
+        with Receiver(db_type, self.serialport) as datalines:
+            self.port = self.init_telemetry(datalines)
         network_manager.add_connection(self.serialport,self.port)
-
+        reactor.run()
 
     def get_headers(self):
         #generate headers
@@ -170,135 +148,59 @@ class Vehicle:
         return ','.join(list_header)
 
     def init_telemetry(self, datalines):
-        factory = TelemetryFactory(datalines, self.header)
+        self.factory = TelemetryFactory(datalines, self.header)
         one2many = ProducerToManyClient()
-        factory.setSource(one2many)
+        self.factory.setSource(one2many)
 
-        telem = TelemetryProducer(one2many,WriteToFileMiddleware(datalines, self.filename, self.header))
+        telem = TelemetryProducer(one2many,self.get_middleware(datalines))
 
-        host = reactor.listenTCP(0, factory).getHost()
+        host = reactor.listenTCP(0, self.factory).getHost()
         print('listening on port {}'.format(host.port))
 
         threads.deferToThread(telem.resumeProducing)
         return host.port
+    def get_middleware(self, datalines):
+        return WriteToFileMiddleware(datalines, self.filename, self.header)
 
+class VehicleSimulator(Vehicle):
+    def __init__(self,simfile,speed):
+        self.simfile = simfile
+        self.speed = speed
+        self.header = self.get_headers()
 
-class Simulator(Vehicle):
-    def __init__(self,serialport,simfile,speed=0.2):
-        network_manager.add_connection(serialport,1234)
-        self._simfile = simfile
-        self._speed = speed
+        self.header = self.get_headers()
+        with ReceiverSimulator('logs/' + simfile, speed) as datalines:
+            self.port = self.init_telemetry(datalines)
 
-    def data_lines(self):
-        with open(self._filename, 'r') as infile:
-            # skip the header line
-            infile.next()
-            for line in infile:
-                #print 'yielding line'
-                yield line
-                time.sleep(self._speed)
+        network_manager.add_connection(self.simfile,self.port)
 
-    def async_tx(self, command):
-        """Fake sending a command, since we obviously don't have anywhere
-        to send it.
-        """
-        print("Noob is trying to send a command to a simulated plane LOL")
+    def get_headers(self):
+        with open('logs/' + self.simfile) as simfile:
+            return simfile.readline()
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        print('printing traceback')
-        print(traceback)
-        print('end of traceback')
-        pass
+    def get_middleware(self,datalines):
+        return datalines
 
 class DataRelay:
-    def __init__(self):
-        self.refresh_all()
+    def __init__(self, simfiles='',simspeed=0.2):
+        self.simfiles = simfiles.split(',')
+        self.simspeed = simspeed
+        self.reset_all()
+
         print(network_manager.connections_to_string())
-        reactor.run()
-    def refresh(self):
+
+    def refresh_vehicles(self):
         ports = util.detect_xbee_ports()
         #make a connection for each one
         for port in ports:
             if port not in self._vehicles:
                 self._vehicles[port] = (Vehicle(port))
+    def refresh_sims(self):
+        for simfile in self.simfiles:
+            if simfile not in self._vehicles and simfile!='':
+                self._vehicles[simfile] = (VehicleSimulator(simfile,self.simspeed))
 
-    def refresh_all(self):
+    def reset_all(self):
         self._vehicles = {}
-        self.refresh()
-
-
-def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True):
-    #enable/disable logging
-    if logging:
-        filename = "logs/flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
-        print ("writing to file called '{}'".format(filename))
-    else:
-        print ("Logging is disabled. Use --log to overwrite default.")
-
-    #generate headers
-    list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
-    #Add additional fields here:
-    list_header.append('RSSI')
-    header = ','.join(list_header)
-
-    try:
-        if sim_file:
-            intermediate = DatalinkSimulator('logs/' + sim_file, sim_speed)
-            with open('logs/' + sim_file) as simfile:
-                header = simfile.readline()
-        else:
-            intermediate = Receiver(db_type, serial_port)
-
-        with intermediate as datalines:
-            factory = TelemetryFactory(datalines, header)
-            one2many = ProducerToManyClient()
-            factory.setSource(one2many)
-
-            if logging:
-                telem = TelemetryProducer(one2many,
-                        WriteToFileMiddleware(datalines, filename, header))
-            else:
-                telem = TelemetryProducer(one2many,datalines)
-
-            host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
-            print('listening on port {}'.format(host.port))
-
-            if legacy_port:
-                print('auto discovery disabled in legacy port mode')
-            else:
-                reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
-
-            threads.deferToThread(telem.resumeProducing)
-            reactor.run()
-    except KeyboardInterrupt:
-        print("Capture interrupted by user")
-
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Read data from xbee, write it locally and replay it over the network to connected clients.")
-    parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs folder.")
-    parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
-    parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
-    parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
-    parser.add_argument("--log", action='store_true', help="Always write log file (even in simulator mode).")
-    parser.add_argument("--nolog", action='store_true', help="Never write log file.")
-    args = parser.parse_args()
-
-    #Default Sim Speed
-    simspeed = 0.2
-    if (args.simspeed):
-        simspeed = float(args.simspeed)
-
-    #default log setting: log unless in simulator mode
-    logging = not (args.simfile)
-    if(args.log):
-        logging=True
-    elif(args.nolog):
-        logging=False
-
-
-    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging)
+        self.refresh_vehicles()
+        self.refresh_sims()
