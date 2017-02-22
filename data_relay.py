@@ -135,10 +135,10 @@ class Vehicle:
         self.serialport = serialport
         self.filename = "logs/flight_data_{}_{}.csv".format(datetime.datetime.now(),self.serialport).replace(':','_').replace(' ','_')
         self.header = self.get_headers()
-        with Receiver(db_type, self.serialport) as datalines:
-            self.port = self.init_telemetry(datalines)
+        datalines = Receiver(db_type, self.serialport)
+        self.port = self.init_telemetry(datalines)
         network_manager.add_connection(self.serialport,self.port)
-        reactor.run()
+
 
     def get_headers(self):
         #generate headers
@@ -169,8 +169,8 @@ class VehicleSimulator(Vehicle):
         self.header = self.get_headers()
 
         self.header = self.get_headers()
-        with ReceiverSimulator('logs/' + simfile, speed) as datalines:
-            self.port = self.init_telemetry(datalines)
+        datalines = ReceiverSimulator('logs/' + simfile, speed)
+        self.port = self.init_telemetry(datalines)
 
         network_manager.add_connection(self.simfile,self.port)
 
@@ -188,7 +188,7 @@ class DataRelay:
         self.reset_all()
 
         print(network_manager.connections_to_string())
-
+        reactor.run()
     def refresh_vehicles(self):
         ports = util.detect_xbee_ports()
         #make a connection for each one

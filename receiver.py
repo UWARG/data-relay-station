@@ -75,6 +75,7 @@ class Receiver:
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
 
         self.xbee = ZigBee(serial.Serial(serialport, 115200))
+        print 'saved xbee' , self.xbee
 
     def async_tx(self, command):
         """Eventually send a command
