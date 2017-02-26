@@ -7,6 +7,8 @@ from sys import platform as _platform
 import time, datetime
 import glob
 import util, downlink_data
+from txXBee.protocol import txXBee
+from twisted.internet.serialport import SerialPort
 
 
 # The max allowed size for an api packet
@@ -44,40 +46,9 @@ class Logger:
         self.debug_file.close()
         self.data_file.close()
 
-class Receiver:
+class Receiver(txXBee):
 
-    def __init__(self, serialport, consumer):
-        self.data_shape = downlink_data.get_data_shape()
-        self.consumer = consumer
-        #setup logging
-        filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
-        self.logger = Logger(filename)
-
-        #Check if all packets have the same size
-        if not downlink_data.packets_are_same_size():
-            downlink_data.print_packet_sizes()
-            raise ValueError("Data packet size mismatch")
-
-        self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
-        self.source_addr = None
-        self.source_addr_long = None
-        self.packet_type = None
-        self.outbound = []
-        self.rssi = -100
-        self.stored_data = [tuple([None])]*len(self.data_shape.keys())
-
-        self.xbee = ZigBee(serial.Serial(serialport, 115200), callback=self.data_lines)
-        print 'saved xbee' , self.xbee
-
-    def async_tx(self, command):
-        """Eventually send a command
-        """
-        self.outbound.append(command)
-    def write_telem(self, packet):
-        self.consumer.write(str(packet).replace("None", "") + "\r\n")
-
-    def data_lines(self, packet):
-
+    def handle_packet(self, packet):
         payload = ''
         yield_data = ()
 
@@ -90,6 +61,7 @@ class Receiver:
                 if packet.get('command', None) == 'DB':
                     self.rssi = ord(packet.get('parameter',self.rssi))
         else:
+
             self.source_addr_long = packet.get(
                     'source_addr_long')
             self.source_addr = packet.get(
@@ -113,17 +85,53 @@ class Receiver:
 
             self.write_telem(yield_data)
 
-            #self.logger.write_packet_to_file(yield_data)
+            self.logger.write_packet_to_file(yield_data)
 
 
 
         # flush the command queue to the xbee
-        for cmd in self.outbound:
+        '''for cmd in self.outbound:
             self.xbee.tx(dest_addr_long=self.source_addr_long,
                     dest_addr=self.source_addr, data=cmd)
             print("command {}".format(' '.join("0x{:02x}".format(i) for i in cmd)))
-            print("sent a command")
+            print("sent a command")'''
         self.outbound = []
+
+    def getSomeData(self):
+		print 'get some data'
+
+
+
+    def __init__(self, serialport, consumer):
+        super(Receiver, self).__init__()
+        self.data_shape = downlink_data.get_data_shape()
+        self.consumer = consumer
+        #setup logging
+        filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
+        self.logger = Logger(filename)
+
+        #Check if all packets have the same size
+        if not downlink_data.packets_are_same_size():
+            downlink_data.print_packet_sizes()
+            raise ValueError("Data packet size mismatch")
+
+        self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
+        self.source_addr = None
+        self.source_addr_long = None
+        self.packet_type = None
+        self.outbound = []
+        self.rssi = -100
+        self.stored_data = [tuple([None])]*len(self.data_shape.keys())
+
+        #self.xbee = ZigBee(serial.Serial(serialport, 115200), callback=self.data_lines)
+        #print 'saved xbee' , self.xbee
+
+    def async_tx(self, command):
+        """Eventually send a command
+        """
+        self.outbound.append(command)
+    def write_telem(self, packet):
+        self.consumer.write(str(packet).replace("None", "") + "\r\n")
 
     def __del__(self, type, value, traceback):
         print('exitting')

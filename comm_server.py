@@ -40,7 +40,7 @@ class ProducerConsumerBufferProxy:
         self._producer = producer
         self._consumer = consumer
         self._producer.addClient(self)
-    
+
     def pauseProducing(self):
         print('pausing {}'.format(
             self._consumer.transport.getPeer()))
@@ -66,11 +66,9 @@ class ProducerConsumerBufferProxy:
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
-    def __init__(self, producer, raw_source, header):
         print('initing {}'.format(self.__class__))
         self._producer = producer
         self._is_commander = False
-        self._raw_telemetry_source = raw_source
         self._command_parser = CommandParser()
         self._header = header
 
@@ -89,7 +87,8 @@ class ServeTelemetry(LineReceiver):
         elif self._is_commander:
             valid, command = self._command_parser.parse_command(line.rstrip())
             if valid:
-                self._raw_telemetry_source.async_tx(command)
+                #TODO
+                print(command)
             else:
                 print('command not valid')
 
@@ -101,13 +100,12 @@ class ServeTelemetry(LineReceiver):
 
 class TelemetryFactory(Factory):
 
-    def __init__(self, raw_source, header):
+    def __init__(self,header):
         self.clients = []
-        self._raw_source = raw_source
         self._header= header
 
     def setSource(self, telemetrySource):
         self._telemetrySource = telemetrySource
 
     def buildProtocol(self, addr):
-        return ServeTelemetry(self._telemetrySource, self._raw_source, self._header)
+        return ServeTelemetry(self._telemetrySource, self._header)

@@ -6,6 +6,7 @@ from receiver import Receiver, ReceiverSimulator
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
 from service_locator import ServiceProviderLocator
+from twisted.internet.serialport import SerialPort
 
 
 
@@ -18,16 +19,17 @@ class XBee:
         self.header = downlink_data.get_headers()
 
         one2many = ProducerToManyClient()
-        datalines = Receiver(self.serialport, one2many)
-        factory = TelemetryFactory(datalines, self.header)
+        s = SerialPort(Receiver(self.serialport, one2many), serialport, reactor, 115200)
+        #datalines = Receiver(self.serialport, one2many)
+        factory = TelemetryFactory(self.header)
         factory.setSource(one2many)
-        #self.host = reactor.listenTCP(0, factory).getHost()
-        #self.port = self.host.port
-        self.port = 1235
+        self.host = reactor.listenTCP(0, factory).getHost()
+        self.port = self.host.port
+
         print('listening on port {}'.format(self.port))
 
         network_manager.add_connection(self.serialport,self.port)
-
+        reactor.run()
     def get_middleware(self, datalines):
         #return WriteToFileMiddleware(datalines, self.filename, self.header)
         return datalines
