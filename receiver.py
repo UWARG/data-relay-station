@@ -4,55 +4,61 @@ import serial
 import struct
 from xbee.zigbee import ZigBee
 from sys import platform as _platform
-import time
+import time, datetime
 import glob
-import os,errno
+import util, downlink_data
+
 
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
 
-
-class WriteToFileMiddleware:
+#logs path
+LOG_PATH = 'logs/'
+class Logger:
     """Take a generator, write each element out to file and
     forward it
     """
-    def __init__(self, gen, filename, header):
+    def __init__(self, filename):
         print('initing {}'.format(self.__class__))
-        self.gen = gen
-        self.filename = filename
-        self.header = header
+    #init file names and headers
+        self.debug_filename = LOG_PATH + filename + '.txt'
+        self.data_filename = LOG_PATH + filename + '.csv'
+        self.header = downlink_data.get_headers()
+    #create directory if one doesn't already exist
+        util.create_directory(LOG_PATH)
+    #open files
+        self.debug_file = open(self.debug_filename, 'w')
+        self.data_file = open(self.data_filename, 'w')
+    #write headers to file
+        self.data_file.write("{}\r\n".format(self.header))
 
-        #Create folder if not already there
-        if not os.path.exists(os.path.dirname(self.filename)):
-            try:
-                os.makedirs(os.path.dirname(self.filename))
-            except OSError as exc: # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise
-        #self.transport = gen.transport
+    def debug(self,message):
+        #write to debug file
+        self.debug_file.write(message + '\n')
+    def write_packet_to_file(self,packet_string):
+        #write to csv file
+        parsed_packet_string = str(packet_string).replace('(','').replace(')','').replace('None','') + '\n'
+        self.data_file.write(parsed_packet_string)
 
+    def __del__(self):
+        self.debug_file.close()
+        self.data_file.close()
 
 class Receiver:
 
-    def __init__(self, db_type, serialport, consumer):
-        self.data_shape = {key:struct.Struct(
-            ''.join(map(lambda x: x[0], packet))) for key, packet in db_type.iteritems()}
+    def __init__(self, serialport, consumer):
+        self.data_shape = downlink_data.get_data_shape()
         self.consumer = consumer
-        #Print out packet size
-        for key, packet in self.data_shape.iteritems():
-            print("Packet Size {}: {}".format(key,packet.size))
+        #setup logging
+        filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
+        self.logger = Logger(filename)
 
         #Check if all packets have the same size
-        self.data_size = self.data_shape[self.data_shape.keys()[0]].size
-        data_mismatch = False
-        for i in xrange(1,len(self.data_shape)):
-            if (self.data_shape[i].size != self.data_size):
-                print("Data Packets are not the same in size: " + str(self.data_size) + " " + str(self.data_shape[i].size))
-                data_mismatch = True
-        if data_mismatch:
+        if not downlink_data.packets_are_same_size():
+            downlink_data.print_packet_sizes()
             raise ValueError("Data packet size mismatch")
 
-        self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
+        self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
         self.source_addr = None
         self.source_addr_long = None
         self.packet_type = None
@@ -107,6 +113,8 @@ class Receiver:
 
             self.write_telem(yield_data)
 
+            #self.logger.write_packet_to_file(yield_data)
+
 
 
         # flush the command queue to the xbee
@@ -117,8 +125,7 @@ class Receiver:
             print("sent a command")
         self.outbound = []
 
-
-    def __exit__(self, type, value, traceback):
+    def __del__(self, type, value, traceback):
         print('exitting')
         self.xbee = None
         try:
