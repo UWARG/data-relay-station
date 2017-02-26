@@ -18,6 +18,8 @@ class TelemetryProducer:
         for i in self._gen.data_lines():
             self._consumer.write(str(i).replace("None", "") + "\r\n")
 
+    def send_packet(self, packet):
+        self._consumer.write(str(packet).replace("None", "") + "\r\n")
     def connectionMade(self):
         self.factory.clients.append(self)
 

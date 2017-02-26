@@ -130,13 +130,23 @@ db_type = {
             ('x', 'one byte of padding'),
             )
         }
-class Vehicle:
+class XBee:
     def __init__(self,serialport):
         self.serialport = serialport
         self.filename = "logs/flight_data_{}_{}.csv".format(datetime.datetime.now(),self.serialport).replace(':','_').replace(' ','_')
         self.header = self.get_headers()
-        datalines = Receiver(db_type, self.serialport)
-        self.port = self.init_telemetry(datalines)
+
+
+
+        one2many = ProducerToManyClient()
+        datalines = Receiver(db_type, self.serialport, one2many)
+        factory = TelemetryFactory(datalines, self.header)
+        factory.setSource(one2many)
+        self.host = reactor.listenTCP(0, factory).getHost()
+        self.port = self.host.port
+        print('listening on port {}'.format(self.port))
+
+
         network_manager.add_connection(self.serialport,self.port)
 
 
@@ -147,22 +157,12 @@ class Vehicle:
         list_header.append('RSSI')
         return ','.join(list_header)
 
-    def init_telemetry(self, datalines):
-        self.factory = TelemetryFactory(datalines, self.header)
-        one2many = ProducerToManyClient()
-        self.factory.setSource(one2many)
-
-        telem = TelemetryProducer(one2many,self.get_middleware(datalines))
-
-        host = reactor.listenTCP(0, self.factory).getHost()
-        print('listening on port {}'.format(host.port))
-
-        threads.deferToThread(telem.resumeProducing)
-        return host.port
     def get_middleware(self, datalines):
-        return WriteToFileMiddleware(datalines, self.filename, self.header)
+        #return WriteToFileMiddleware(datalines, self.filename, self.header)
+        return datalines
 
-class VehicleSimulator(Vehicle):
+
+class XBeeSimulator(XBee):
     def __init__(self,simfile,speed):
         self.simfile = simfile
         self.speed = speed
@@ -189,18 +189,18 @@ class DataRelay:
 
         print(network_manager.connections_to_string())
         reactor.run()
-    def refresh_vehicles(self):
+    def refresh_xbees(self):
         ports = util.detect_xbee_ports()
         #make a connection for each one
         for port in ports:
-            if port not in self._vehicles:
-                self._vehicles[port] = (Vehicle(port))
+            if port not in self._xbees:
+                self._xbees[port] = (XBee(port))
     def refresh_sims(self):
         for simfile in self.simfiles:
-            if simfile not in self._vehicles and simfile!='':
-                self._vehicles[simfile] = (VehicleSimulator(simfile,self.simspeed))
+            if simfile not in self._xbees and simfile!='':
+                self._xbees[simfile] = (XBeeSimulator(simfile,self.simspeed))
 
     def reset_all(self):
-        self._vehicles = {}
-        self.refresh_vehicles()
+        self._xbees = {}
+        self.refresh_xbees()
         self.refresh_sims()
