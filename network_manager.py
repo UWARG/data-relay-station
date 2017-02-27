@@ -17,3 +17,15 @@ def connections_to_string():
     for item in items:
         connection_string+= str(item[0])+':'+str(item[1])+','
     return connection_string[:-1]
+
+
+class TCPConnection:
+    def __init__(self, reactor, port=0):
+        self.reactor = reactor
+        one2many = ProducerToManyClient()
+        factory = TelemetryFactory(self.header)
+        factory.setSource(one2many)
+        self.host = reactor.listenTCP(port, factory).getHost()
+    def get_port()
+        return self.host.port
+    

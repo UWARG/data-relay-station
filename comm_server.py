@@ -66,6 +66,7 @@ class ProducerConsumerBufferProxy:
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
+    def __init__(self, producer, header):
         print('initing {}'.format(self.__class__))
         self._producer = producer
         self._is_commander = False

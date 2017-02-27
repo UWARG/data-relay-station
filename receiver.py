@@ -1,3 +1,4 @@
+
 ### receiver.py
 
 import serial
@@ -45,13 +46,43 @@ class Logger:
     def __del__(self):
         self.debug_file.close()
         self.data_file.close()
+class Vehicle:
+    def __init__(self, addr, addr_long):
+        self.addr = addr
+        self.addr_long = addr_long
+
+    def get_port():
+        return self.property
+
+
 
 class Receiver(txXBee):
+    def __init__(self, serialport, consumer):
+        super(Receiver, self).__init__()
+        self.data_shape = downlink_data.get_data_shape()
+        self.consumer = consumer
+        #setup logging
+        filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
+        self.logger = Logger(filename)
+
+        #Check if all packets have the same size
+        if not downlink_data.packets_are_same_size():
+            downlink_data.print_packet_sizes()
+            raise ValueError("Data packet size mismatch")
+
+        self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
+        self.source_addr = None
+        self.source_addr_long = None
+        self.packet_type = None
+        self.outbound = []
+        self.rssi = -100
+        self.stored_data = [tuple([None])]*len(self.data_shape.keys())
 
     def handle_packet(self, packet):
         payload = ''
         yield_data = ()
 
+        #check if packet is something other than incoming data
         if packet.get('id', None) != 'rx':
             #Checks for tx_response
             if packet.get('id', None) == 'tx_status':
@@ -97,39 +128,11 @@ class Receiver(txXBee):
             print("sent a command")'''
         self.outbound = []
 
-    def getSomeData(self):
-		print 'get some data'
-
-
-
-    def __init__(self, serialport, consumer):
-        super(Receiver, self).__init__()
-        self.data_shape = downlink_data.get_data_shape()
-        self.consumer = consumer
-        #setup logging
-        filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
-        self.logger = Logger(filename)
-
-        #Check if all packets have the same size
-        if not downlink_data.packets_are_same_size():
-            downlink_data.print_packet_sizes()
-            raise ValueError("Data packet size mismatch")
-
-        self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
-        self.source_addr = None
-        self.source_addr_long = None
-        self.packet_type = None
-        self.outbound = []
-        self.rssi = -100
-        self.stored_data = [tuple([None])]*len(self.data_shape.keys())
-
-        #self.xbee = ZigBee(serial.Serial(serialport, 115200), callback=self.data_lines)
-        #print 'saved xbee' , self.xbee
-
     def async_tx(self, command):
         """Eventually send a command
         """
         self.outbound.append(command)
+
     def write_telem(self, packet):
         self.consumer.write(str(packet).replace("None", "") + "\r\n")
 
@@ -144,6 +147,7 @@ class Receiver(txXBee):
         if isinstance(value, serial.SerialException):
             print(traceback)
             return True
+
 class ReceiverSimulator:
     def __init__(self, filename, speed):
         print('initing {}'.format(self.__class__))

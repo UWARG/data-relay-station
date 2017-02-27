@@ -1,10 +1,5 @@
 from data_relay import DataRelay
 
-def signal_handler(*args):
-    print("Killed by user")
-    # teardown()
-    sys.exit(0)
-
 def main(simfile, simspeed):
 
     #initialize UDP connections
