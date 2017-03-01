@@ -47,23 +47,29 @@ class Logger:
         self.debug_file.close()
         self.data_file.close()
 class Vehicle:
-    def __init__(self, addr, addr_long):
+    def __init__(self, addr, addr_long, alias):
         self.addr = addr
         self.addr_long = addr_long
+        #create new TCPConnection
+        self.connection = TCPConnection(reactor)
+        #add to network_manager
+        network_manager.add_connection(alias, self.connection)
 
-    def get_port():
-        return self.property
-
-
-
-class Receiver(txXBee):
-    def __init__(self, serialport, consumer):
-        super(Receiver, self).__init__()
-        self.data_shape = downlink_data.get_data_shape()
-        self.consumer = consumer
         #setup logging
         filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
         self.logger = Logger(filename)
+
+    def get_port(self):
+        return self.connection.get_port()
+
+    def write_packet(packet):
+        self.logger.write_packet_to_file(packet)
+        self.connection.write(packet)
+
+class Receiver(txXBee):
+    def __init__(self, serialport):
+        super(Receiver, self).__init__()
+        self.data_shape = downlink_data.get_data_shape()
 
         #Check if all packets have the same size
         if not downlink_data.packets_are_same_size():
@@ -71,12 +77,11 @@ class Receiver(txXBee):
             raise ValueError("Data packet size mismatch")
 
         self.expected_packets = downlink_data.get_data_size() / MAX_PACKET_SIZE + 1
-        self.source_addr = None
-        self.source_addr_long = None
         self.packet_type = None
         self.outbound = []
         self.rssi = -100
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
+        self.vehicles = {}
 
     def handle_packet(self, packet):
         payload = ''
@@ -93,9 +98,9 @@ class Receiver(txXBee):
                     self.rssi = ord(packet.get('parameter',self.rssi))
         else:
 
-            self.source_addr_long = packet.get(
+            source_addr_long = packet.get(
                     'source_addr_long')
-            self.source_addr = packet.get(
+            source_addr = packet.get(
                     'source_addr')
 
             payload += packet['rf_data']
@@ -114,9 +119,13 @@ class Receiver(txXBee):
             #Add RSSI to each packet
             yield_data += tuple([self.rssi])
 
-            self.write_telem(yield_data)
+            if source_addr_long is not in self.vehicles:
+                self.vehicles[source_addr_long] = Vehicle(source_addr, source_addr_long)
+                print('added vehicle ' + source_addr_long)
 
-            self.logger.write_packet_to_file(yield_data)
+            self.vehicles[source_addr_long].write_packet(yield_data)
+
+
 
 
 

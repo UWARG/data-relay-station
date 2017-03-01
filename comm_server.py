@@ -7,6 +7,7 @@ from twisted.internet import interfaces
 from zope.interface import implements
 
 from command import CommandParser
+import downlink_data
 
 
 class ProducerToManyClient:
@@ -66,12 +67,12 @@ class ProducerConsumerBufferProxy:
 
 class ServeTelemetry(LineReceiver):
     """Serve the telemetry"""
-    def __init__(self, producer, header):
+    def __init__(self, producer):
         print('initing {}'.format(self.__class__))
         self._producer = producer
         self._is_commander = False
         self._command_parser = CommandParser()
-        self._header = header
+        self._header = downlink_data.get_headers()
 
     def connectionMade(self):
         self.proxy = ProducerConsumerBufferProxy(self._producer, self)
@@ -101,12 +102,11 @@ class ServeTelemetry(LineReceiver):
 
 class TelemetryFactory(Factory):
 
-    def __init__(self,header):
+    def __init__(self):
         self.clients = []
-        self._header= header
 
     def setSource(self, telemetrySource):
         self._telemetrySource = telemetrySource
 
     def buildProtocol(self, addr):
-        return ServeTelemetry(self._telemetrySource, self._header)
+        return ServeTelemetry(self._telemetrySource)
