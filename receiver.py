@@ -2,6 +2,7 @@
 ### receiver.py
 
 import serial
+import Queue
 import struct
 from xbee.zigbee import ZigBee
 from sys import platform as _platform
@@ -10,6 +11,7 @@ import glob
 import util, downlink_data
 from txXBee.protocol import txXBee
 from twisted.internet.serialport import SerialPort
+from twisted.internet.task import LoopingCall
 
 
 # The max allowed size for an api packet
@@ -46,15 +48,39 @@ class Logger:
     def __del__(self):
         self.debug_file.close()
         self.data_file.close()
+class CommandQueue:
+    def __init__(self, receiver, reactor):
+        self.commands = Queue.Queue()
+        self.receiver = receiver
+        self.reactor = reactor
+    def async_command(self, command):
+        self.commands.put(command)
+    def send_command(self):
+        if not self.commands.empty():
+            command = self.commands.get()
+            self.reactor.callFromThread(self.receiver.send,
+    			          "tx",
+    			          dest_addr_long=command.get_addr_long(),
+    			          dest_addr=command.get_addr(),
+    			          data=command.get_data())
+class Command:
+    def __init__(self, cmd, vehicle):
+        self.cmd = cmd
+        self.vehicle = vehicle
+    def get_data(self):
+        return cmd
+    def get_addr(self):
+        return self.vehicle.get_addr()
+    def get_addr_long(self):
+        return self.vehicle.get_addr_long()
+
 class Vehicle:
-    def __init__(self, addr, addr_long, alias):
+    def __init__(self, addr, addr_long, alias, reactor):
         self.addr = addr
         self.addr_long = addr_long
+        self.reactor = reactor
         #create new TCPConnection
-        self.connection = TCPConnection(reactor)
-        #add to network_manager
-        network_manager.add_connection(alias, self.connection)
-
+        self.create_tcp()
         #setup logging
         filename = "flight_{}_{}".format(datetime.datetime.now(),serialport).replace(':','_').replace(' ','_')
         self.logger = Logger(filename)
@@ -62,13 +88,22 @@ class Vehicle:
     def get_port(self):
         return self.connection.get_port()
 
-    def write_packet(packet):
+    def write_packet(self,packet):
         self.logger.write_packet_to_file(packet)
         self.connection.write(packet)
 
+    def create_tcp(self):
+        self.producer = ProducerToManyClient()
+        factory = TelemetryFactory()
+        factory.setSource(self.producer)
+        self.port = self.reactor.listenTCP(port, factory).getHost().port
+        #add to network_manager
+        network_manager.add_connection(alias, self.port)
+
 class Receiver(txXBee):
     def __init__(self, serialport):
-        super(Receiver, self).__init__()
+        print('init Receiver on ' + serialport )
+        super(Receiver, self).__init__(escaped=True)
         self.data_shape = downlink_data.get_data_shape()
 
         #Check if all packets have the same size
@@ -82,11 +117,13 @@ class Receiver(txXBee):
         self.rssi = -100
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
         self.vehicles = {}
+        print('finished init Receiver on ' + serialport )
 
     def handle_packet(self, packet):
         payload = ''
         yield_data = ()
 
+        print packet
         #check if packet is something other than incoming data
         if packet.get('id', None) != 'rx':
             #Checks for tx_response
@@ -119,10 +156,11 @@ class Receiver(txXBee):
             #Add RSSI to each packet
             yield_data += tuple([self.rssi])
 
-            if source_addr_long is not in self.vehicles:
+            if source_addr_long not in self.vehicles:
                 self.vehicles[source_addr_long] = Vehicle(source_addr, source_addr_long)
                 print('added vehicle ' + source_addr_long)
 
+            #write data to corresponding vehicle
             self.vehicles[source_addr_long].write_packet(yield_data)
 
 
@@ -144,18 +182,6 @@ class Receiver(txXBee):
 
     def write_telem(self, packet):
         self.consumer.write(str(packet).replace("None", "") + "\r\n")
-
-    def __del__(self, type, value, traceback):
-        print('exitting')
-        self.xbee = None
-        try:
-            self.ser.close()
-        except(AttributeError):
-            #If the program exits before ser is initiallized, ser.close() will throw an AttributeError, which is caught and ignored
-            pass
-        if isinstance(value, serial.SerialException):
-            print(traceback)
-            return True
 
 class ReceiverSimulator:
     def __init__(self, filename, speed):

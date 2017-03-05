@@ -1,12 +1,13 @@
 from data_relay import DataRelay
-
+from twisted.internet import reactor
 def main(simfile, simspeed):
 
     #initialize UDP connections
     #TODO
 
     #start data relay
-    relay = DataRelay(simfile, simspeed)
+    print reactor
+    relay = DataRelay(reactor)
 
     #start multi echo
     #TODO

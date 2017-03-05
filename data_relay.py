@@ -1,9 +1,7 @@
-
-tro==### data_relay.py
+### data_relay.py
 
 import datetime, time, util, network_manager, downlink_data
-from network_manager import TCPConnection
-from twisted.internet import threads, reactor
+from twisted.internet import threads
 from receiver import Receiver, ReceiverSimulator
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
@@ -18,12 +16,14 @@ SERVICE_PORT = 1234
 
 class XBee(SerialPort):
     def __init__(self,serialport, reactor):
-        super.__init__(XBee,Receiver(self.serialport), serialport, reactor, 115200)
-        print('listening on port {}'.format(self.connection.get_port()))
+        print reactor
+        self.serialport = serialport
+        super(XBee,self).__init__(Receiver(self.serialport), self.serialport, reactor, 115200)
+
     def connectionLost(self, reason):
-        super.connectionLost(Xbee,reason)
+        super(XBee,self).connectionLost(reason)
         print('Xbee connection ' + self.serialport + ' lost.')
-        
+
 class XBeeSimulator(XBee):
     def __init__(self,simfile,speed):
         self.simfile = simfile
@@ -44,20 +44,24 @@ class XBeeSimulator(XBee):
         return datalines
 
 class DataRelay:
-    def __init__(self):
+    def __init__(self, reactor):
+        self.reactor = reactor
         self.reset_xbees()
 
-        print(network_manager.connections_to_string())
-        reactor.run()
+        print('network: ' + network_manager.connections_to_string())
+        print self.reactor
+        self.reactor.run()
     def refresh_xbees(self):
         #find xbee serial ports
         ports = util.detect_xbee_ports()
+        print ports
         #make a connection for each one
         for port in ports:
             if port not in self._xbees:
-                self._xbees[port] = (XBee(port,reactor))
+                #s = SerialPort(Receiver(port), port, reactor, baudrate=115200)
+                self._xbees[port] = (XBee(port,self.reactor))
 
-    def reset_all(self):
+    def reset_xbees(self):
         self._xbees = {}
         self.refresh_xbees()
 
