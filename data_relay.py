@@ -115,13 +115,11 @@ db_type = {
             ('h', 'autonomousLevel'),
             ('h', 'startup_error_codes'),
             ('h', 'startupSettings'),
-            ('B', 'probe_status'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
+            ('h', 'dl_transmission_errors'),
+            ('h', 'ul_receive_errors'),
+            ('B', 'ul_rssi'),
+            ('B', 'uhf_rssi'),
+            ('B', 'uhf_link_quality'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
@@ -191,7 +189,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
 
     list_header = [i[1] for key, value in db_type.iteritems() for i in value if not i[0] == 'x']
     #Add additional fields here:
-    list_header.append('RSSI')
+    list_header.append('dl_rssi')
     header = ','.join(list_header)
 
     try:
