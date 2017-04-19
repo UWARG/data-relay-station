@@ -11,27 +11,15 @@ import struct
 
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
-    'set_pitchKDGain':          {'cmd':1,   'type':'f'},
-    'set_rollKDGain':           {'cmd':2,   'type':'f'},
-    'set_yawKDGain':            {'cmd':3,   'type':'f'},
-    'set_pitchKPGain':          {'cmd':4,   'type':'f'},
-    'set_rollKPGain':           {'cmd':5,   'type':'f'},
-    'set_yawKPGain':            {'cmd':6,   'type':'f'},
-    'set_pitchKIGain':          {'cmd':7,   'type':'f'},
-    'set_rollKIGain':           {'cmd':8,   'type':'f'},
-    'set_yawKIGain':            {'cmd':9,   'type':'f'},
-    'set_headingKDGain':        {'cmd':10,  'type':'f'},
-    'set_headingKPGain':        {'cmd':11,  'type':'f'},
-    'set_headingKIGain':        {'cmd':12,  'type':'f'},
-    'set_altitudeKDGain':       {'cmd':13,  'type':'f'},
-    'set_altitudeKPGain':       {'cmd':14,  'type':'f'},
-    'set_altitudeKIGain':       {'cmd':15,  'type':'f'},
-    'set_throttleKDGain':       {'cmd':16,  'type':'f'},
-    'set_throttleKPGain':       {'cmd':17,  'type':'f'},
-    'set_throttleKIGain':       {'cmd':18,  'type':'f'},
-    'set_pathGain':             {'cmd':19,  'type':'f'},
-    'set_orbitGain':            {'cmd':20,  'type':'f'},
-    'set_showGain':             {'cmd':21,  'type':'B'},
+
+    'set_heading_gain':         {'cmd':1,   'type':'f'},
+    'set_altitude_gain':        {'cmd':2,   'type':'f'},
+    'set_ground_speed_gain':     {'cmd':3,   'type':'f'},
+    'show_gains':               {'cmd':4,   'type':'B'},
+   
+    'set_path_gain':            {'cmd':19,  'type':'f'},
+    'set_orbit_gain':           {'cmd':20,  'type':'f'},
+
     'set_pitchRate':            {'cmd':22,  'type':'h'},
     'set_rollRate':             {'cmd':23,  'type':'h'},
     'set_yawRate':              {'cmd':24,  'type':'h'},
@@ -78,11 +66,13 @@ multipart_command_types = { # append pad bytes so all waypoint commands are the 
     'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf8x'}, # lon, lat, alt
     'tare_IMU':                 {'cmd':131, 'type':'fff'},
     'set_IMU':                  {'cmd':132, 'type':'fff'},
-    'set_KDValues':             {'cmd':133, 'type':'fffffff'},
-    'set_KPValues':             {'cmd':134, 'type':'fffffff'},
-    'set_KIValues':             {'cmd':135, 'type':'fffffff'},
+    
     'update_waypoint':          {'cmd':136, 'type':'ddffBxxB'}, # lon, lat, alt, rad, type, id
-    'set_gains':                {'cmd':137, 'type':'hfff'} #first int represents the channel #, 3 floats are KD, KP, KI
+    'set_roll_rate_gains':      {'cmd':137, 'type': 'fff'}, #kp, kd, ki
+    'set_pitch_rate_gains':     {'cmd':138, 'type': 'fff'},
+    'set_yaw_rate_gains':       {'cmd':139, 'type': 'fff'},
+    'set_roll_angle_gains':     {'cmd':140, 'type': 'fff'},
+    'set_pitch_angle_gains':    {'cmd':141, 'type': 'fff'},
 }
 
 class CommandParser:
