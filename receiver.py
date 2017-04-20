@@ -66,6 +66,7 @@ class Receiver:
         if data_mismatch:
             raise ValueError("Data packet size mismatch")
         
+        #number of packet frames we're expecting to receive. Only valid if we're sending over 100 bytes of data
         self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
         self.source_addr = None
         self.source_addr_long = None

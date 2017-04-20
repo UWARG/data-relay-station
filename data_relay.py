@@ -19,7 +19,7 @@ db_type = {
         PACKET_TYPE_POSITION: ( # 62 bytes + 18 padding bytes
             ('d', 'lat'),
             ('d', 'lon'),
-            ('l', 'sys_time'),
+            ('L', 'sys_time'),
             ('f', 'gps_time'),
             ('f', 'pitch'),
             ('f', 'roll'),
@@ -48,9 +48,9 @@ db_type = {
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
+            ('x', 'one byte of padding')
             ),
-        PACKET_TYPE_STATUS: ( # 36 bytes + 44 bytes padding
+        PACKET_TYPE_STATUS: ( # 44 bytes + 36 bytes padding
             ('h', 'roll_rate_setpoint'),
             ('h', 'pitch_rate_setpoint'),
             ('h', 'yaw_rate_setpoint'),
@@ -59,20 +59,22 @@ db_type = {
             ('h', 'heading_setpoint'),
             ('h', 'altitude_setpoint'),
             ('h', 'throttle_setpoint'),
-            ('h', 'battery_level1'),
-            ('h', 'battery_level2'),
+            ('h', 'internal_battery_voltage'),
+            ('h', 'external_battery_voltage'),
+            ('H', 'program_state'),
             ('H', 'autonomous_level'),
-            ('h', 'startup_error_codes'),
-            ('h', 'dl_transmission_errors'),
-            ('h', 'ul_receive_errors'),
+            ('H', 'startup_errors'),
+            ('H', 'am_interchip_errors'),
+            ('H', 'pm_interchip_errors'),
+            ('H', 'gps_communication_errors'),
+            ('H', 'dl_transmission_errors'),
+            ('H', 'ul_receive_errors'),
+            ('H', 'peripheral_status'),
+            ('H', 'uhf_channel_status'),
             ('B', 'ul_rssi'),
             ('B', 'uhf_rssi'),
             ('B', 'uhf_link_quality'),
-            ('B', 'path_following'),
             ('B', 'waypoint_index'),
-            ('B', 'gps_status'),
-            ('B', 'waypoint_count'),
-            ('B', 'autopilot_active'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
@@ -108,17 +110,9 @@ db_type = {
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
-            ('x', 'one byte of padding'),
+            ('x', 'one byte of padding')
             ),
-        PACKET_TYPE_GAINS: ( # 80 bytes + no padding
+        PACKET_TYPE_GAINS: ( # 80 bytes + 0 bytes of padding
             ('f', 'roll_rate_kp'),
             ('f', 'roll_rate_kd'),
             ('f', 'roll_rate_ki'),
@@ -158,7 +152,6 @@ db_type = {
             ('h', 'ch7_out'),
             ('h', 'ch8_out'),
             ('B', 'channels_scaled'),
-                        ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
@@ -205,6 +198,7 @@ db_type = {
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
             ('x', 'one byte of padding'),
+            ('x', 'one byte of padding')
             )
         }
 
