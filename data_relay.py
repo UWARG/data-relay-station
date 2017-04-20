@@ -60,7 +60,7 @@ db_type = {
             ('B', 'waypoint_count'),
             ('x', 'one byte of padding'),
             ),
-        PACKET_TYPE_GAINS: ( # 80 bytes + 0 bytes of padding
+        PACKET_TYPE_GAINS: ( # 92 bytes + 0 bytes of padding
             ('f', 'roll_rate_kp'),
             ('f', 'roll_rate_kd'),
             ('f', 'roll_rate_ki'),
