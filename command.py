@@ -11,10 +11,9 @@ import struct
 
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
-
     'set_heading_gain':         {'cmd':1,   'type':'f'},
     'set_altitude_gain':        {'cmd':2,   'type':'f'},
-    'set_ground_speed_gain':     {'cmd':3,   'type':'f'},
+    'set_ground_speed_gain':    {'cmd':3,   'type':'f'},
     'show_gains':               {'cmd':4,   'type':'B'},
    
     'set_path_gain':            {'cmd':19,  'type':'f'},
