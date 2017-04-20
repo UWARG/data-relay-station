@@ -11,10 +11,7 @@ import struct
 
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
-    'set_heading_gain':         {'cmd':1,   'type':'f'},
-    'set_altitude_gain':        {'cmd':2,   'type':'f'},
-    'set_ground_speed_gain':    {'cmd':3,   'type':'f'},
-    'show_gains':               {'cmd':4,   'type':'B'},
+    'show_gains':               {'cmd':1,   'type':'B'},
    
     'set_path_gain':            {'cmd':19,  'type':'f'},
     'set_orbit_gain':           {'cmd':20,  'type':'f'},
@@ -67,11 +64,14 @@ multipart_command_types = { # append pad bytes so all waypoint commands are the 
     'set_IMU':                  {'cmd':132, 'type':'fff'},
     
     'update_waypoint':          {'cmd':136, 'type':'ddffBxxB'}, # lon, lat, alt, rad, type, id
-    'set_roll_rate_gains':      {'cmd':137, 'type': 'fff'}, #kp, kd, ki
+    'set_roll_rate_gains':      {'cmd':137, 'type': 'fff'}, #kp, ki, kd (PID)
     'set_pitch_rate_gains':     {'cmd':138, 'type': 'fff'},
     'set_yaw_rate_gains':       {'cmd':139, 'type': 'fff'},
     'set_roll_angle_gains':     {'cmd':140, 'type': 'fff'},
     'set_pitch_angle_gains':    {'cmd':141, 'type': 'fff'},
+    'set_heading_gains':         {'cmd':142,   'type':'fff'},
+    'set_altitude_gains':        {'cmd':143,   'type':'fff'},
+    'set_ground_speed_gains':    {'cmd':144,   'type':'fff'},
 }
 
 class CommandParser:

@@ -77,8 +77,11 @@ db_type = {
             ('f', 'pitch_angle_kd'),
             ('f', 'pitch_angle_ki'),
             ('f', 'heading_kp'),
+            ('f', 'heading_ki'),
             ('f', 'altitude_kp'),
+            ('f', 'altitude_ki'),
             ('f', 'ground_speed_kp'),
+            ('f', 'ground_speed_ki'),
             ('f', 'path_kp'),
             ('f', 'orbit_kp')
             ),
