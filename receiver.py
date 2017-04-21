@@ -55,18 +55,9 @@ class Receiver:
         #Print out packet size
         for key, packet in self.data_shape.iteritems():
             print("Packet Size {}: {}".format(key,packet.size))
-        
-        #Check if all packets have the same size
-        self.data_size = self.data_shape[self.data_shape.keys()[0]].size
-        data_mismatch = False
-        for i in xrange(1,len(self.data_shape)):
-            if (self.data_shape[i].size != self.data_size):
-                print("Data Packets are not the same in size: " + str(self.data_size) + " " + str(self.data_shape[i].size))
-                data_mismatch = True
-        if data_mismatch:
-            raise ValueError("Data packet size mismatch")
-        
-        self.expected_packets = self.data_size / MAX_PACKET_SIZE + 1
+
+        #number of packet frames we're expecting to receive. Only valid if we're sending over 100 bytes of data
+        self.expected_packets = 1 #assume we will only send 1 packet down for now
         self.source_addr = None
         self.source_addr_long = None
         self.packet_type = None

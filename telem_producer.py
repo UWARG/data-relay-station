@@ -2,6 +2,10 @@
 
 from twisted.internet import interfaces
 from zope.interface import implements
+import re
+
+
+
 
 class TelemetryProducer:
     """Produce the """
@@ -16,7 +20,7 @@ class TelemetryProducer:
     def resumeProducing(self):
         print('resuming producing of {}'.format(self.__class__))
         for i in self._gen.data_lines():
-            self._consumer.write(str(i).replace("None", "") + "\r\n")
+            self._consumer.write(re.sub(r"([\(\)\s]|None)*", '', str(i)) + "\r\n") #regex removes brackets, whitespace, and word None from telemetry
 
     def connectionMade(self):
         self.factory.clients.append(self)
