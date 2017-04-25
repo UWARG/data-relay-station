@@ -7,7 +7,7 @@ from sys import platform as _platform
 import time
 import glob
 import os,errno
-
+from uart_connection import UARTConnection
 # The max allowed size for an api packet
 MAX_PACKET_SIZE = 100
 
@@ -44,11 +44,11 @@ class WriteToFileMiddleware:
                 outfile.write(str(line).replace('(','').replace(')','').replace('None','') + '\n')
             # re-yield element
             yield line
-        
+
 
 class Receiver:
 
-    def __init__(self, db_type, serialport):
+    def __init__(self, db_type, serialport, uart_connection=False):
         self.data_shape = {key:struct.Struct(
             ''.join(map(lambda x: x[0], packet))) for key, packet in db_type.iteritems()}
 
@@ -65,6 +65,7 @@ class Receiver:
         self.rssi = -100
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
         self.default_serial = serialport
+        self.uart_connection = uart_connection
 
     def async_tx(self, command):
         """Eventually send a command
@@ -75,7 +76,7 @@ class Receiver:
     def reconnect_xbee(self):
     #search for available ports
         port_to_connect = ''
-        while port_to_connect == '': 
+        while port_to_connect == '':
 
             #detect platform and format port names
             if _platform.startswith('win'):
@@ -85,9 +86,9 @@ class Receiver:
                 ports = glob.glob('/dev/ttyUSB*')
             else:
                 raise EnvironmentError('Unsupported platform: ' + _platform)
-        
+
             ports_avail = []
-            
+
             #loop through all possible ports and try to connect
             for port in ports:
                 try:
@@ -96,10 +97,10 @@ class Receiver:
                     ports_avail.append(port)
                 except (OSError, serial.SerialException):
                     pass
-            
+
             if len(ports_avail) ==1:
                 port_to_connect = ports_avail[0]
-                
+
             elif len(ports_avail)==0:
                 #No Serial port found, continue looping.
                 print( "No serial port detected. Trying again...")
@@ -115,8 +116,13 @@ class Receiver:
                 else:
                     raise EnvironmentError('Incorrect command line parameters. Serial port is not known as a valid port. Valid ports are:'+ str(ports_avail))
 
-        #connect to xbee
-        self.xbee = ZigBee(serial.Serial(port_to_connect, 115200))
+        #connect to xbee or uart
+        ser = serial.Serial(port_to_connect, 115200)
+        if self.uart_connection:
+            self.xbee = UARTConnection(ser)
+        else:
+            self.xbee = ZigBee(ser)
+
         print('xbee connected to port ' + port_to_connect)
         return self
 
@@ -136,7 +142,6 @@ class Receiver:
                 for x in xrange(self.expected_packets):
 
                     packet = self.xbee.wait_read_frame()
-
                     #limit packets by only sending decibel strength only when if statement is true
                     if(packetCnt>=10):
                         self.xbee.at(command="DB")
@@ -152,7 +157,7 @@ class Receiver:
                             if packet.get('command', None) == 'DB':
                                 self.rssi = ord(packet.get('parameter',self.rssi))
                         packet = self.xbee.wait_read_frame()
-                        
+
                     self.source_addr_long = packet.get(
                             'source_addr_long', self.source_addr_long)
                     self.source_addr = packet.get(
@@ -162,7 +167,7 @@ class Receiver:
 
                     # Read first two bytes, to determine packet type
                     packet_type = struct.unpack("h", payload[:2])[0]
-                
+
                     # Unpack Struct according to ID, and update global parameters
                     for data_type, data_shape in self.data_shape.iteritems():
                         if (packet_type == data_type):
@@ -170,7 +175,7 @@ class Receiver:
                         else:
                             self.stored_data[data_type] = tuple([None] * len([i for i in data_shape.format if i != 'x']))
                     yield_data = tuple([i for j in self.stored_data for i in j])
-                    
+
                     #Add RSSI to each packet
                     yield_data += tuple([self.rssi])
 
