@@ -29,22 +29,24 @@ class UARTConnection:
         if(ord(packet_data[0])==XBEE_FRAME_TYPE_TX_REQUEST):
             packet['id']='rx'
 
-        #ignore 12 bits of header data
-        #store the rest in the packet
-        packet['rf_data'] =packet_data[14:]
+            #ignore 12 bytes of header data
+            #store the rest in the packet
+            packet['rf_data'] = packet_data[14:]
 
-        #calculate what the checksum should be
-        checksum = 0
-        for byte in packet_data:
-            checksum +=ord(byte)
+            #calculate what the checksum should be
+            checksum = 0
+            for byte in packet_data:
+                checksum +=ord(byte)
 
-        #get checksum and compare
-        byte = ord(self.serial.read())
-        if((checksum + byte) & 0xFF == 0xFF):
-            return packet
+            #get checksum and compare
+            byte = ord(self.serial.read())
+            if((checksum + byte) & 0xFF == 0xFF):
+                return packet
+            else:
+                print('uart checksum incorrect!')
         return None
 
-    #used for rssi, which is kind of pointless when you aren't actually using xbees
+    #used for rssi, which is pointless when you aren't actually using xbees
     def at(self,command=""):
         pass
 
