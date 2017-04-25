@@ -157,7 +157,7 @@ class DatalinkSimulator:
         print('end of traceback')
         pass
 
-def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True):
+def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logging=True, uart=False):
     if logging:
         filename = "logs/flight_data_{}.csv".format(datetime.datetime.now()).replace(':','_').replace(' ','_');
         print ("writing to file called '{}'".format(filename))
@@ -175,7 +175,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
             with open('logs/' + sim_file) as simfile:
                 header = simfile.readline()
         else:
-            intermediate = Receiver(db_type, serial_port)
+            intermediate = Receiver(db_type, serial_port, uart)
 
         with intermediate as datalines:
             factory = TelemetryFactory(datalines, header)
@@ -187,7 +187,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
                         WriteToFileMiddleware(datalines, filename, header))
             else:
                 telem = TelemetryProducer(one2many,datalines)
-                
+
             host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, factory).getHost()
             print('listening on port {}'.format(host.port))
 
@@ -208,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("--simfile", metavar="FILE", required=False, help="file to use for simulated data replay. File should be located in logs folder.")
     parser.add_argument("--simspeed", metavar="NUMBER", required=False, help="speed to play the simfile at in seconds per frame", default=0.2)
     parser.add_argument("--serialport", metavar="STRING", required=False, help="Preferred serial port if multiple devices are connected.")
+    parser.add_argument("--uart", "-u", action='store_true', help="Connect to picpilot via uart instead of xbees.")
     parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
     parser.add_argument("--log", action='store_true', help="Always write log file (even in simulator mode).")
     parser.add_argument("--nolog", action='store_true', help="Never write log file.")
@@ -224,6 +225,5 @@ if __name__ == "__main__":
         logging=True
     elif(args.nolog):
         logging=False
-    
 
-    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging)
+    main(sim_file=args.simfile, sim_speed=simspeed, serial_port=args.serialport, legacy_port=args.legacy_port, logging=logging, uart=args.uart)
