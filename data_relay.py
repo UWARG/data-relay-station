@@ -59,7 +59,7 @@ db_type = {
             ('B', 'uhf_link_quality'),
             ('B', 'waypoint_index'),
             ('B', 'waypoint_count'),
-			('x', 'padding'),
+            ('x', 'padding'),
             ),
         PACKET_TYPE_GAINS: ( # 92 bytes + 0 bytes of padding
             ('f', 'roll_rate_kp'),
