@@ -1,6 +1,7 @@
 DELIMITER= 0x7e
 XBEE_FRAME_TYPE_TX_REQUEST  = 0x10
 XBEE_FRAME_TYPE_RX_INDICATOR = 0x90
+XBEE_FRAME_TYPE_AT_COMMAND = 0x08
 class UARTConnection:
 
     def __init__(self,serial):
@@ -9,14 +10,12 @@ class UARTConnection:
     #wait until the next packet, and then parse the packet
     def wait_read_frame(self):
         #create empty packet
-        packet = {'id':'',
-        'source_addr_long':'',
-         'source_addr':'',
-         'rf_data':''}
+        packet = {}
+
         #wait until packet arrives
-        byte = ord(self.serial.read());
-        while(byte!=DELIMITER):
-            byte = ord(self.serial.read())
+        byte = self.serial.read();
+        while(len(byte)==1 and ord(byte)!=DELIMITER):
+            byte = self.serial.read()
 
         #parse length bytes
         length =  ord(self.serial.read()) << 8
@@ -24,8 +23,11 @@ class UARTConnection:
 
         #get packet data
         packet_data = self.serial.read(length)
-
-        #get the frame id, which is the first bit
+        if(len(packet_data)<length):
+            print('full packet not recieved')
+            return {}
+        #frame id is the first byte
+        #check for incoming data
         if(ord(packet_data[0])==XBEE_FRAME_TYPE_TX_REQUEST):
             packet['id']='rx'
 
@@ -44,7 +46,17 @@ class UARTConnection:
                 return packet
             else:
                 print('uart checksum incorrect!')
-        return None
+
+        #check for AT command
+        elif(ord(packet_data[0])==XBEE_FRAME_TYPE_AT_COMMAND):
+            packet['id'] = 'at_response'
+
+            #get 2 command bytes
+            packet['command'] = packet_data[2:4]
+            return packet
+
+        print('error in parsing uart with frame id ' + str(ord(packet_data[0])))
+        return {}
 
     #used for rssi, which is pointless when you aren't actually using xbees
     def at(self,command=""):
