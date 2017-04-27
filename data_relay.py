@@ -32,7 +32,8 @@ db_type = {
             ('f', 'ground_speed'),
             ('h', 'heading')
             ),
-        PACKET_TYPE_STATUS: ( # 45 bytes + 1 bytes padding
+        PACKET_TYPE_STATUS: ( # 49 bytes + 1 bytes padding
+            ('f', 'path_checksum'), 
             ('h', 'roll_rate_setpoint'),
             ('h', 'pitch_rate_setpoint'),
             ('h', 'yaw_rate_setpoint'),
@@ -58,8 +59,7 @@ db_type = {
             ('B', 'uhf_link_quality'),
             ('B', 'waypoint_index'),
             ('B', 'waypoint_count'),
-			('f', 'path_checksum'),
-            ('x', 'one byte of padding'),
+			('x', 'padding'),
             ),
         PACKET_TYPE_GAINS: ( # 92 bytes + 0 bytes of padding
             ('f', 'roll_rate_kp'),
