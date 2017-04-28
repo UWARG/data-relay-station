@@ -62,7 +62,7 @@ class Receiver:
         self.source_addr_long = None
         self.packet_type = None
         self.outbound = []
-        self.rssi = -100
+        self.rssi = 255
         self.stored_data = [tuple([None])]*len(self.data_shape.keys())
         self.default_serial = serialport
         self.uart_connection = uart_connection
@@ -155,7 +155,7 @@ class Receiver:
                         #Checks for command response and signal strength
                         elif packet.get('id', None) == 'at_response':
                             if packet.get('command', None) == 'DB':
-                                self.rssi = ord(packet.get('parameter',self.rssi))
+                                self.rssi = ord(packet.get('parameter',chr(self.rssi)))
                         packet = self.xbee.wait_read_frame()
 
                     self.source_addr_long = packet.get(
