@@ -12,7 +12,7 @@ import struct
 command_types = {
     'debug':                    {'cmd':0,   'type':None}, # Print to debug UART
     'show_gains':               {'cmd':1,   'type':'B'},
-   
+
     'set_path_gain':            {'cmd':19,  'type':'f'},
     'set_orbit_gain':           {'cmd':20,  'type':'f'},
 
@@ -30,7 +30,7 @@ command_types = {
     'set_gyroVariance':         {'cmd':33,  'type':'f'},
     'set_magneticVariance':     {'cmd':34,  'type':'f'},
     'set_accelVariance':        {'cmd':35,  'type':'f'},
-    'set_scaleFactor':          {'cmd':36,  'type':'f'},
+    'set_turnFactor':           {'cmd':36,  'type':'f'},
     'calibrate_altimeter':      {'cmd':37,  'type':'f'},
     'clear_waypoints':          {'cmd':38,  'type':'B'},
     'remove_waypoint':          {'cmd':39,  'type':'B'},
@@ -38,12 +38,12 @@ command_types = {
     'return_home':              {'cmd':41,  'type':'B'},
     'cancel_returnHome':        {'cmd':42,  'type':'B'},
     'send_heartbeat':           {'cmd':43,  'type':'B'},
-    'trigger_camera':           {'cmd':44,  'type':'h'},
-    'set_triggerDistance':      {'cmd':45,  'type':'f'},
+    'calibrate_airspeed':       {'cmd':44,  'type':'B'},
+    'set_adverseYawMix':        {'cmd':45,  'type':'f'},
     'set_gimbleOffset':         {'cmd':46,  'type':'h'},
     'kill_plane':               {'cmd':47,  'type':'h'},
     'unkill_plane':             {'cmd':48,  'type':'h'},
-    'lock_goPro':               {'cmd':49,  'type':'h'},
+    'unused_49':                {'cmd':49,  'type':'h'},
     'arm_vehicle':              {'cmd':50,  'type':'h'},
     'dearm_vehicle':            {'cmd':51,  'type':'h'},
     'set_flap':                 {'cmd':52,  'type':'h'},
@@ -62,7 +62,7 @@ multipart_command_types = { # append pad bytes so all waypoint commands are the 
     'set_returnHomeCoordinates':{'cmd':130, 'type':'ddf8x'}, # lon, lat, alt
     'tare_IMU':                 {'cmd':131, 'type':'fff'},
     'set_IMU':                  {'cmd':132, 'type':'fff'},
-    
+
     'update_waypoint':          {'cmd':136, 'type':'ddffBxxB'}, # lon, lat, alt, rad, type, id
     'set_roll_rate_gains':      {'cmd':137, 'type': 'fff'}, #kp, ki, kd (PID)
     'set_pitch_rate_gains':     {'cmd':138, 'type': 'fff'},
