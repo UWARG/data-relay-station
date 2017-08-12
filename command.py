@@ -69,9 +69,10 @@ multipart_command_types = { # append pad bytes so all waypoint commands are the 
     'set_yaw_rate_gains':       {'cmd':139, 'type': 'fff'},
     'set_roll_angle_gains':     {'cmd':140, 'type': 'fff'},
     'set_pitch_angle_gains':    {'cmd':141, 'type': 'fff'},
-    'set_heading_gains':         {'cmd':142,   'type':'fff'},
-    'set_altitude_gains':        {'cmd':143,   'type':'fff'},
-    'set_ground_speed_gains':    {'cmd':144,   'type':'fff'},
+    'set_heading_gains':        {'cmd':142, 'type': 'fff'},
+    'set_altitude_gains':       {'cmd':143, 'type': 'fff'},
+    'set_ground_speed_gains':   {'cmd':144, 'type': 'fff'},
+    'calibrate_pwm_inputs':     {'cmd':145, 'type': 'hhf'},
 }
 
 class CommandParser:
