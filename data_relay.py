@@ -2,7 +2,8 @@
 
 import datetime, time
 
-from twisted.internet import reactor, threads
+from twisted.internet import reactor
+import thread
 from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
@@ -197,7 +198,8 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
             else:
                 reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
 
-            threads.deferToThread(telem.resumeProducing)
+            thread.start_new_thread( telem.resumeProducing, () )
+
             reactor.run()
     except KeyboardInterrupt:
         print("Capture interrupted by user")
