@@ -6,7 +6,7 @@ from twisted.internet.protocol import Factory
 from twisted.internet import interfaces
 from zope.interface import implements
 
-from command import CommandParser
+import command
 
 
 class ProducerToManyClient:
@@ -71,7 +71,6 @@ class ServeTelemetry(LineReceiver):
         self._producer = producer
         self._is_commander = False
         self._raw_telemetry_source = raw_source
-        self._command_parser = CommandParser()
         self._header = header
 
     def connectionMade(self):
@@ -85,11 +84,10 @@ class ServeTelemetry(LineReceiver):
             self.transport.getPeer(), line))
         if line == 'commander':
             self._is_commander = True
-            self._command_parser
         elif self._is_commander:
-            valid, command = self._command_parser.parse_command(line.rstrip())
+            valid, cmd = command.parse_command(line.rstrip())
             if valid:
-                self._raw_telemetry_source.async_tx(command)
+                self._raw_telemetry_source.async_tx(cmd)
             else:
                 print('command not valid')
 
