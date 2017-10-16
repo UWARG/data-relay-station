@@ -146,7 +146,6 @@ class CmdHandler(Cmd):
             print('command not valid')
 
     def complete_cmd(self, text, line, begidx, endidx):
-        print "test"
         self.cmdList = command.command_types.keys() + command.multipart_command_types.keys()
         self.cmdList = [s + ":" for s in self.cmdList]  #add : to end of all strings
         if not text:
