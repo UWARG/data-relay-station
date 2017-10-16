@@ -2,8 +2,11 @@
 
 import datetime, time
 
-from twisted.internet import reactor
 import thread
+from cmd import Cmd
+import command
+
+from twisted.internet import reactor
 from receiver import Receiver, WriteToFileMiddleware
 from comm_server import TelemetryFactory, ProducerToManyClient
 from telem_producer import TelemetryProducer
@@ -128,6 +131,35 @@ def _get_service_host():
     print("{}".format(local_ip_address))
     return local_ip_address
 
+
+class CmdHandler(Cmd):
+    def __init__(self, data_lines):
+        Cmd.__init__(self)
+        self.data_lines = data_lines
+        
+
+    def do_cmd(self, line):
+        valid, cmd = command.parse_command(line.rstrip())
+        if valid:
+            self.data_lines.async_tx(cmd)
+        else:
+            print('command not valid')
+
+    def complete_cmd(self, text, line, begidx, endidx):
+        self.cmdList = command.command_types.keys() + command.multipart_command_types.keys()
+        self.cmdList = [s + ":" for s in self.cmdList]  #add : to end of all strings
+        if not text:
+            completions = self.cmdList[:]
+        else:
+            completions = [ f
+                            for f in self.cmdList
+                            if f.startswith(text)
+                            ]
+        return completions
+
+    def do_EOF(self, line):
+        return True
+
 class DatalinkSimulator:
 
     def __init__(self, filename, speed):
@@ -200,6 +232,8 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
 
             thread.start_new_thread( telem.resumeProducing, () )
 
+            cmdHandler = CmdHandler(datalines)
+            thread.start_new_thread( cmdHandler.cmdloop,())
             reactor.run()
     except KeyboardInterrupt:
         print("Capture interrupted by user")
